@@ -19,6 +19,17 @@ for s in "$root"/baseline/apply.sh "$root"/baseline/files/.githooks/* "$root"/to
   sh -n "$s" 2>/dev/null || err "$s: 셸 문법 오류"
 done
 
+# 루트의 baseline 사본이 정본과 같은지 확인한다.
+(cd "$root/baseline/files" && find . -type f | sed 's|^\./||') | while IFS= read -r rel; do
+  [ -f "$root/$rel" ] && ! cmp -s "$root/baseline/files/$rel" "$root/$rel" && echo "FAIL 루트 사본이 baseline과 다름: $rel (sh baseline/apply.sh . 로 갱신)"
+done | grep -q FAIL && { echo "FAIL 루트 사본이 baseline과 다름"; fail=1; }
+blk="$(sed -n '/ysm-baseline:start/,/ysm-baseline:end/p' "$root/AGENTS.md" | sed '1d;$d')"
+[ "$blk" = "$(cat "$root/baseline/agents-block.md")" ] || err "AGENTS.md의 baseline 구역이 agents-block.md와 다름"
+
+# 스킬마다 ysm-locate 블록이 같아야 한다.
+n="$(for f in "$root"/skills/*/SKILL.md; do grep -q 'ysm-locate:start' "$f" && sed -n '/ysm-locate:start/,/ysm-locate:end/p' "$f" | cksum; done | sort -u | wc -l | tr -d ' ')"
+[ "$n" -le 1 ] || err "ysm-locate 블록이 스킬마다 다름"
+
 # 공개를 고려해 비밀·회사 자료가 섞이지 않았는지 간단히 확인한다.
 if grep -rIlE '(gh[po]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN (RSA|OPENSSH|EC)? ?PRIVATE KEY-----)' "$root" --exclude-dir=.git --exclude=validate.sh >/dev/null 2>&1; then
   err "비밀값으로 보이는 문자열 발견"

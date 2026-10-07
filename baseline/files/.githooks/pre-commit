@@ -1,7 +1,20 @@
 #!/bin/sh
-# 비밀값으로 보이는 파일·문자열이 staged에 있으면 커밋을 막는다. Node 등 런타임이 필요 없다.
+# 비밀값으로 보이는 파일·문자열이 staged에 있으면, 그리고 noreply 이메일이 요구되는 프로젝트에서 다른 이메일이면 커밋을 막는다. Node 등 런타임이 필요 없다.
 # 오탐이면 해당 줄·파일을 고치거나 사용자에게 알린다. 우회(--no-verify)는 사용자만 결정한다.
 # 활성화: git config core.hooksPath .githooks
+
+# 이 프로젝트가 noreply 이메일을 요구하도록 설정된 경우(ysm.requireNoreply=true)에만 검사한다.
+if [ "$(git config --get ysm.requireNoreply)" = "true" ]; then
+  email="$(git config user.email)"
+  case "$email" in
+    *@users.noreply.github.com) ;;
+    *)
+      echo "커밋 이메일이 GitHub noreply 주소가 아니다: '$email'" >&2
+      echo "이 프로젝트에서만 바꾼다: git config --local user.email <id>+<계정>@users.noreply.github.com" >&2
+      exit 1
+      ;;
+  esac
+fi
 
 files="$(git diff --cached --name-only --diff-filter=ACM)"
 bad_files="$(printf '%s\n' "$files" | grep -E '(^|/)(\.env(\..+)?|id_rsa|id_ed25519|[^/]+\.(pem|key|p12|pfx))$' | grep -vE '\.env\.(example|sample)$')"

@@ -1,12 +1,18 @@
 #!/bin/sh
 # 베이스라인을 대상 프로젝트에 적용한다. 기존 파일은 덮어쓰지 않는다.
-# 사용: apply.sh [--dry-run] <대상 폴더>
+# 사용: apply.sh [--dry-run] [--noreply-email] <대상 폴더>
+#   --noreply-email: gh 로그인 계정의 GitHub noreply 주소를 이 프로젝트의 커밋 이메일로 설정하고
+#                    pre-commit이 검사하게 한다(새 프로젝트용).
 # 출력(한 줄에 하나): CREATED|SAME|DIFFERS|APPENDED|UPDATED|INFO <경로 또는 메시지>
 #   DIFFERS = 같은 경로에 다른 내용이 이미 있음. 덮어쓰지 않았으니 호출한 쪽이 병합한다.
 set -eu
 
 dry=0
-if [ "${1:-}" = "--dry-run" ]; then dry=1; shift; fi
+noreply=0
+while [ "${1:-}" = "--dry-run" ] || [ "${1:-}" = "--noreply-email" ]; do
+  case "$1" in --dry-run) dry=1 ;; --noreply-email) noreply=1 ;; esac
+  shift
+done
 target="${1:-}"
 [ -n "$target" ] || { echo "usage: apply.sh [--dry-run] <target-dir>" >&2; exit 2; }
 [ -d "$target" ] || { echo "not a directory: $target" >&2; exit 2; }
@@ -84,5 +90,18 @@ if [ "$dry" = 0 ]; then
   [ -d "$target/.githooks" ] && chmod +x "$target"/.githooks/* 2>/dev/null || true
   git -C "$target" config core.hooksPath .githooks
   printf '%s\n' "$version" > "$target/.ysm-baseline"
+fi
+if [ "$noreply" = 1 ]; then
+  login="$(gh api user -q .login 2>/dev/null || true)"
+  uid="$(gh api user -q .id 2>/dev/null || true)"
+  if [ -n "$login" ] && [ -n "$uid" ]; then
+    if [ "$dry" = 0 ]; then
+      git -C "$target" config --local user.email "$uid+$login@users.noreply.github.com"
+      git -C "$target" config --local ysm.requireNoreply true
+    fi
+    echo "INFO commit email -> $uid+$login@users.noreply.github.com"
+  else
+    echo "INFO noreply-email SKIPPED: gh 로그인(gh auth login) 후 다시 실행한다"
+  fi
 fi
 echo "INFO hooksPath=.githooks stamp=.ysm-baseline($version)"
