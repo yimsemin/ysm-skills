@@ -1,0 +1,11 @@
+{
+  "name": "ysm-skills",
+  "owner": { "name": "yimsemin" },
+  "plugins": [
+    {
+      "name": "ysm",
+      "source": "./",
+      "description": "Project baseline + new-project / adopt-project / setup-machine skills"
+    }
+  ]
+}
