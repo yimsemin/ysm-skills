@@ -1,11 +1,14 @@
 {
   "name": "ysm-skills",
-  "owner": { "name": "yimsemin" },
+  "owner": {
+    "name": "yimsemin"
+  },
   "plugins": [
     {
       "name": "ysm",
       "source": "./",
-      "description": "Project baseline + new-project / adopt-project / setup-machine skills"
+      "description": "Project baseline and the new-project skill"
     }
-  ]
+  ],
+  "description": "ysm project baseline and skills for Claude Code and Codex"
 }
