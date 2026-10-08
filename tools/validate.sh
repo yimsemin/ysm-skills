@@ -15,9 +15,11 @@ for d in "$root"/skills/*/; do
   sed -n '2,/^---$/p' "$f" | grep -q '^description: .\{20,\}' || err "$name: description 없음 또는 너무 짧음"
 done
 
-for s in "$root"/baseline/apply.sh "$root"/baseline/files/.githooks/* "$root"/tools/*.sh; do
+for s in "$root"/baseline/apply.sh "$root"/global/apply-global.sh "$root"/baseline/files/.githooks/* "$root"/tools/*.sh; do
   sh -n "$s" 2>/dev/null || err "$s: 셸 문법 오류"
 done
+
+for f in "$root"/global/agents.md "$root"/global/settings.json "$root"/global/VERSION; do [ -f "$f" ] || err "$f 없음"; done
 
 # 루트의 baseline 사본이 정본과 같은지 확인한다.
 (cd "$root/baseline/files" && find . -type f | sed 's|^\./||') | while IFS= read -r rel; do

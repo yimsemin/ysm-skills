@@ -7,7 +7,7 @@
     {
       "name": "ysm",
       "source": "./",
-      "description": "Project baseline and the new-project skill"
+      "description": "Project baseline, global instructions, and new-project / setup-machine skills"
     }
   ],
   "description": "ysm project baseline and skills for Claude Code and Codex"

@@ -24,7 +24,7 @@
 https://github.com/yimsemin/ysm-skills 참조해서 기본 셋팅해줘
 ```
 
-에이전트가 이 저장소의 [new-project 스킬](skills/new-project/SKILL.md)을 따라 부족한 것만 묻고(필요하면 스택을 제안하고) 베이스라인을 적용한 뒤 `AGENTS.md`를 채운다. 첫 커밋과 GitHub 저장소 생성은 요청할 때 한다. 플러그인을 설치했다면 `/ysm:new-project 만들 것…`으로 시작해도 같다.
+에이전트가 이 저장소의 [new-project 스킬](skills/new-project/SKILL.md)을 따라 먼저 이 컴퓨터의 전역 지침을 점검하고(없거나 낡았으면 물어본 뒤 갱신), 부족한 것만 묻고(필요하면 스택을 제안하고) 베이스라인을 적용한 뒤 `AGENTS.md`를 채운다. 첫 커밋과 GitHub 저장소 생성은 요청할 때 한다. 플러그인을 설치했다면 `/ysm:new-project 만들 것…`으로 시작해도 같다.
 
 private인 동안 링크는 웹으로 열리지 않으므로 에이전트가 `gh`로 받아 읽는다(위 "처음 한 번" 1번이 필요한 이유).
 
@@ -33,17 +33,20 @@ private인 동안 링크는 웹으로 열리지 않으므로 에이전트가 `gh
 | 스킬 | 용도 | 상태 |
 |---|---|---|
 | `new-project` | 빈 폴더에서 의도부터 시작해 베이스라인 적용 | 사용 가능 |
+| `setup-machine` | 이 컴퓨터의 전역 지침·설정 점검과 갱신(승인 후) | 사용 가능 |
 | `adopt-project` | 기존·인수 프로젝트를 수정 없이 진단한 뒤 승인받아 맞춤(트레일러 차단, 이력 정리 포함) | 예정 |
-| `setup-machine` | 새 컴퓨터 전역 설정과 전역 설치물 점검 | 예정 |
 | `sync-project` | 베이스라인 갱신 반영 | 예정 |
 | `audit-docs` | 문서의 낡은 내용·모순·중복·사족 점검 | 예정 |
 | `handoff` | 다음 대화방에 붙여 넣을 짧은 인계 프롬프트 작성 | 예정 |
 | `review-journey` | 처음 보는 사용자 기준 전면 재점검 | 예정 |
 
-## 베이스라인
+## 규칙의 두 층
 
-프로젝트로 복사되는 정본은 `baseline/`이다. 규칙 본문은 [baseline/agents-block.md](baseline/agents-block.md) 한 곳에만 있고, 훅·설정 파일은 `baseline/files/`에 있다. 적용은 `baseline/apply.sh`가 하며 기존 파일을 덮어쓰지 않는다.
+- 전역 지침: 소통·판단·검증처럼 저장소와 무관한 규칙. 정본은 [global/agents.md](global/agents.md)이고 `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`의 마커 구역에 들어간다.
+- 베이스라인: 저장소 구조에 따르는 Git·문서·의존성·안전 규칙. 정본은 [baseline/agents-block.md](baseline/agents-block.md)이고 훅·설정 파일은 `baseline/files/`에 있다. `baseline/apply.sh`가 기존 파일을 덮어쓰지 않고 적용한다.
+
+참고한 외부 자료는 [docs/references.md](docs/references.md).
 
 ## 이 저장소 고치기
 
-규칙은 `baseline/`에서만 고친다. 고친 뒤 `baseline/VERSION`을 올리고, 루트 사본은 `sh baseline/apply.sh .`로 갱신한다. `sh tools/validate.sh`가 형식·사본 일치·비밀값을 검사한다.
+규칙은 `baseline/`과 `global/`에서만 고친다. 고친 뒤 해당 `VERSION`을 올리고, 루트 사본은 `sh baseline/apply.sh .`로 갱신한다. `sh tools/validate.sh`가 형식·사본 일치·비밀값을 검사한다.
