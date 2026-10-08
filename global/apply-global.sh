@@ -8,6 +8,7 @@
 #   UNMARKED = 마커 없이 사용자 줄만 있는 파일. 구역을 맨 위에 추가하며, 겹치는 옛 줄은 호출한 쪽이 정리한다.
 set -eu
 
+usage="usage: apply-global.sh --check|--diff|--apply [--home DIR] [--only claude|codex|settings]"
 mode=""
 only=""
 home="${HOME}"
@@ -18,11 +19,11 @@ while [ $# -gt 0 ]; do
     --apply) mode=apply ;;
     --home) shift; home="${1:-}" ;;
     --only) shift; only="${1:-}" ;;
-    *) echo "usage: apply-global.sh --check|--diff|--apply [--home DIR] [--only claude|codex|settings]" >&2; exit 2 ;;
+    *) echo "$usage" >&2; exit 2 ;;
   esac
   shift
 done
-[ -n "$mode" ] || { echo "usage: apply-global.sh --check|--diff|--apply [--home DIR]" >&2; exit 2; }
+[ -n "$mode" ] || { echo "$usage" >&2; exit 2; }
 
 here="$(cd "$(dirname "$0")" && pwd)"
 version="$(tr -d '[:space:]' < "$here/VERSION")"

@@ -14,7 +14,7 @@ while [ "${1:-}" = "--dry-run" ] || [ "${1:-}" = "--noreply-email" ]; do
   shift
 done
 target="${1:-}"
-[ -n "$target" ] || { echo "usage: apply.sh [--dry-run] <target-dir>" >&2; exit 2; }
+[ -n "$target" ] || { echo "usage: apply.sh [--dry-run] [--noreply-email] <target-dir>" >&2; exit 2; }
 [ -d "$target" ] || { echo "not a directory: $target" >&2; exit 2; }
 
 here="$(cd "$(dirname "$0")" && pwd)"
