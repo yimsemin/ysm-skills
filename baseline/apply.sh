@@ -90,7 +90,6 @@ if [ "$dry" = 0 ]; then
   [ -d "$target/.githooks" ] && chmod +x "$target"/.githooks/* 2>/dev/null || true
   git -C "$target" config core.hooksPath .githooks
   printf 'ysm-baseline=%s\n' "$version" > "$target/.env.baseline"
-  rm -f "$target/.ysm-baseline"
 fi
 if [ "$noreply" = 1 ]; then
   login="$(gh api user -q .login 2>/dev/null || true)"
