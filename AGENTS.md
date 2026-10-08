@@ -21,16 +21,14 @@ sh global/apply-global.sh --check          # 이 컴퓨터의 전역 지침 상�
 
 ## 구조
 
-- 사용자가 이 저장소를 참조해 새 프로젝트의 기본 셋팅을 요청하면 `skills/new-project/SKILL.md`를 따른다. 그 첫 단계가 전역 지침 점검(`skills/setup-machine`)이다. 대상은 사용자가 에이전트를 연 작업 폴더이며, 이 저장소의 사본이 아니다.
-
-- `skills/<name>/SKILL.md`: 오픈 표준 스킬. 폴더명 = `name`(영문 kebab-case), `description`은 한영 키워드 병기, 본문은 한국어.
+- 이 저장소 링크와 함께 새 프로젝트의 기본 셋팅 요청이 오면 `skills/new-project/SKILL.md`를 따른다. 대상은 사용자가 에이전트를 연 작업 폴더이고 이 저장소의 사본이 아니다. 첫 단계가 전역 지침 점검(`skills/setup-machine`)이다.
+- `skills/<name>/SKILL.md`: 오픈 표준 스킬. 폴더명 = `name`(영문 kebab-case), `description`은 한영 키워드 병기, 본문은 한국어. 스킬은 이 컴퓨터에 저장소가 있다고 가정하지 않고, 플러그인 경로(`CLAUDE_PLUGIN_ROOT`) 또는 원격 저장소를 임시 폴더로 받아 쓴다(`ysm-locate` 블록, 스킬마다 동일해야 한다).
 - `baseline/`: 프로젝트로 **복사**되는 저장소 규칙의 정본. `files/`는 그대로 복사, `agents-block.md`는 AGENTS.md의 마커 구역에 삽입. 바꾸면 `baseline/VERSION`을 올린다. 프로젝트에는 기반 버전이 커밋되지 않는 `.env.baseline`에만 기록된다.
-- `global/`: 컴퓨터 전역 지침(`agents.md`)과 설정(`settings.json`)의 정본. `apply-global.sh`가 `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`의 마커 구역과 `~/.claude/settings.json`에만 쓰고, 승인 없이 쓰지 않는다. 바꾸면 `global/VERSION`을 올린다.
+- `global/`: `agents.md`(전역 지침)와 `settings.json`(`gh issue` 쓰기를 항상 확인하게 하는 설정)의 정본. `apply-global.sh`가 `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`의 마커 구역과 `~/.claude/settings.json`에만 쓰고, 승인 없이 쓰지 않는다. 바꾸면 `global/VERSION`을 올린다. `chat.md`는 claude.ai 계정 설정에 붙여넣는 대화용 지침이며 `agents.md`와 겹치는 줄은 서로 다른 화면용이라 허용하되, 바꿀 때 함께 확인한다.
 - 전역과 베이스라인에 같은 규칙을 두지 않는다. 판단 기준은 "저장소 없이도 성립하는가"이고, 성립하면 전역이다. 어느 쪽을 고치든 겹치는 문장이 없는지 에이전트가 직접 확인한다.
+- 루트의 `.githooks/`, `.claude/`, `.github/`, `.gitignore`, `.editorconfig`, `.gitattributes`, `CLAUDE.md`와 이 파일의 마커 구역은 baseline의 사본이다. 직접 고치지 말고 `baseline/`을 고친 뒤 `sh baseline/apply.sh .`로 갱신한다.
+- `.claude-plugin/`: Claude Code 마켓플레이스·플러그인 매니페스트. 플러그인 변경을 푸시할 때 `plugin.json`의 version도 올린다.
 - `docs/references.md`: 참고한 외부 자료와 가져온 원칙.
-- 루트의 `.githooks/`, `.claude/`, `.gitignore`, `.editorconfig`, `.gitattributes`, `CLAUDE.md`와 이 파일의 마커 구역은 baseline의 사본이다. 직접 고치지 말고 `baseline/`을 고친 뒤 `sh baseline/apply.sh .`로 갱신한다.
-- `.claude-plugin/`: Claude Code 마켓플레이스·플러그인 매니페스트.
-- 스킬은 이 컴퓨터에 저장소가 있다고 가정하지 않는다. 플러그인 경로(`CLAUDE_PLUGIN_ROOT`) 또는 원격 저장소를 임시 폴더로 받아 쓴다(`ysm-locate` 블록, 스킬마다 동일해야 한다).
 - 이 저장소의 내용에는 회사·개인 전용 정보, 비밀값을 넣지 않는다(공개 전환을 고려).
 
 <!-- ysm-baseline:start -->
