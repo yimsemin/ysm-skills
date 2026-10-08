@@ -56,7 +56,7 @@ done
 
 # 2) AGENTS.md: 베이스라인 구역(마커 사이)만 만들거나 교체한다. 프로젝트 고유 내용은 건드리지 않는다.
 agents="$target/AGENTS.md"
-start="<!-- ysm-baseline:start v$version -->"
+start="<!-- ysm-baseline:start -->"
 end="<!-- ysm-baseline:end -->"
 if [ ! -e "$agents" ]; then
   echo "CREATED AGENTS.md"
@@ -68,7 +68,7 @@ if [ ! -e "$agents" ]; then
     ' "$here/agents-skeleton.md" > "$agents"
   fi
 elif grep -q 'ysm-baseline:start' "$agents"; then
-  echo "UPDATED AGENTS.md (baseline block -> v$version)"
+  echo "UPDATED AGENTS.md (baseline block)"
   if [ "$dry" = 0 ]; then
     tmp="$(mktemp)"
     awk -v start="$start" -v end="$end" -v blk="$here/agents-block.md" '
@@ -85,11 +85,12 @@ else
   fi
 fi
 
-# 3) 훅 활성화와 버전 스탬프
+# 3) 훅 활성화와 기반 버전 기록(.env.baseline은 .gitignore의 .env.*에 걸려 커밋되지 않는다)
 if [ "$dry" = 0 ]; then
   [ -d "$target/.githooks" ] && chmod +x "$target"/.githooks/* 2>/dev/null || true
   git -C "$target" config core.hooksPath .githooks
-  printf '%s\n' "$version" > "$target/.ysm-baseline"
+  printf 'ysm-baseline=%s\n' "$version" > "$target/.env.baseline"
+  rm -f "$target/.ysm-baseline"
 fi
 if [ "$noreply" = 1 ]; then
   login="$(gh api user -q .login 2>/dev/null || true)"
@@ -104,4 +105,4 @@ if [ "$noreply" = 1 ]; then
     echo "INFO noreply-email SKIPPED: gh 로그인(gh auth login) 후 다시 실행한다"
   fi
 fi
-echo "INFO hooksPath=.githooks stamp=.ysm-baseline($version)"
+echo "INFO hooksPath=.githooks based-on=$version (.env.baseline)"
