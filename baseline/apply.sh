@@ -68,16 +68,19 @@ if [ ! -e "$agents" ]; then
     ' "$here/agents-skeleton.md" > "$agents"
   fi
 elif grep -q 'ysm-baseline:start' "$agents"; then
-  echo "UPDATED AGENTS.md (baseline block)"
-  if [ "$dry" = 0 ]; then
-    tmp="$(mktemp)"
-    awk -v start="$start" -v end="$end" -v blk="$here/agents-block.md" '
-      /ysm-baseline:start/ { print start; while ((getline l < blk) > 0) print l; skip=1; next }
-      /ysm-baseline:end/ { print end; skip=0; next }
-      !skip { print }
-    ' "$agents" > "$tmp" && cat "$tmp" > "$agents"
-    rm -f "$tmp"
+  tmp="$(mktemp)"
+  awk -v start="$start" -v end="$end" -v blk="$here/agents-block.md" '
+    /ysm-baseline:start/ { print start; while ((getline l < blk) > 0) print l; skip=1; next }
+    /ysm-baseline:end/ { print end; skip=0; next }
+    !skip { print }
+  ' "$agents" > "$tmp"
+  if cmp -s "$tmp" "$agents"; then
+    echo "SAME AGENTS.md (baseline block)"
+  else
+    echo "UPDATED AGENTS.md (baseline block)"
+    [ "$dry" = 1 ] || cat "$tmp" > "$agents"
   fi
+  rm -f "$tmp"
 else
   echo "APPENDED AGENTS.md (baseline block)"
   if [ "$dry" = 0 ]; then
