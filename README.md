@@ -27,12 +27,31 @@ https://github.com/yimsemin/ysm-skills 참조해서 기본 셋팅해줘
 
 private인 동안 링크는 웹으로 열리지 않으므로 에이전트가 `gh`로 받아 읽는다(위 "처음 한 번" 1번이 필요한 이유).
 
+## Cloudflare Pages 배포하기
+
+기준은 [docs/cloudflare-pages.md](docs/cloudflare-pages.md)에만 있고 대상 프로젝트로 복사되지 않는다. 컴퓨터마다 Cloudflare API 토큰이 한 번 필요하다(만드는 법과 권한은 그 문서의 "토큰"). 토큰은 저장소에 넣지 않는다.
+
+- 대상 프로젝트 폴더에서 에이전트를 열고:
+
+```
+https://github.com/yimsemin/ysm-skills 참조해서 Cloudflare Pages 배포해줘
+```
+
+- 이 저장소 폴더에서 에이전트를 열고:
+
+```
+yimsemin/<대상 저장소>를 Cloudflare Pages 배포해줘
+```
+
+에이전트가 [deploy-cloudflare-pages 스킬](skills/deploy-cloudflare-pages/SKILL.md)을 따라 현재 설정을 조회하고, 표준과의 차이와 계획을 보여 준 뒤 승인받은 항목만 실행한다. 이미 배포된 프로젝트를 점검할 때도 같은 요청을 쓴다.
+
 ## 스킬
 
 | 스킬 | 용도 | 상태 |
 |---|---|---|
 | `new-project` | 빈 폴더에서 의도부터 시작해 베이스라인 적용 | 사용 가능 |
 | `setup-machine` | 이 컴퓨터의 전역 지침·설정 점검과 갱신(승인 후) | 사용 가능 |
+| `deploy-cloudflare-pages` | 프로젝트의 Cloudflare Pages 배포를 표준에 맞춰 만들거나 점검(API, 승인 후) | 사용 가능 |
 | `adopt-project` | 기존·인수 프로젝트를 수정 없이 진단한 뒤 승인받아 맞춤(트레일러 차단, 이력 정리 포함) | 예정 |
 | `sync-project` | 베이스라인 갱신 반영 | 예정 |
 | `audit-docs` | 문서의 낡은 내용·모순·중복·사족 점검 | 예정 |
