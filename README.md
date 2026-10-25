@@ -29,15 +29,9 @@ private인 동안 링크는 웹으로 열리지 않으므로 에이전트가 `gh
 
 ## Cloudflare Pages 배포하기
 
-기준은 [docs/cloudflare-pages.md](docs/cloudflare-pages.md)에만 있고 대상 프로젝트로 복사되지 않는다. 컴퓨터마다 Cloudflare API 토큰이 한 번 필요하다(만드는 법과 권한은 그 문서의 "토큰"). 토큰은 저장소에 넣지 않는다.
+Cloudflare 배포와 관리는 **이 저장소 폴더에서만** 한다. 기준은 [docs/cloudflare-pages.md](docs/cloudflare-pages.md)에만 있고 대상 프로젝트로 복사되지 않는다. Cloudflare API 토큰은 이 저장소 폴더의 `.env`(git에서 제외됨) 또는 환경변수에 둔다. 컴퓨터마다 한 번 발급하며 만드는 법과 권한은 그 문서의 "토큰"에 있다.
 
-- 대상 프로젝트 폴더에서 에이전트를 열고:
-
-```
-https://github.com/yimsemin/ysm-skills 참조해서 Cloudflare Pages 배포해줘
-```
-
-- 이 저장소 폴더에서 에이전트를 열고:
+이 저장소 폴더에서 에이전트를 열고:
 
 ```
 yimsemin/<대상 저장소>를 Cloudflare Pages 배포해줘

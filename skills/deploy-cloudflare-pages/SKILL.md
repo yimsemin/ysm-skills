@@ -5,29 +5,17 @@ description: Set up, audit or fix a project's Cloudflare Pages deployment (GitHu
 
 # deploy-cloudflare-pages
 
-프로젝트의 Cloudflare Pages 설정을 이 저장소의 표준에 맞춘다. 표준·API 절차·제약의 정본은 `docs/cloudflare-pages.md`이고 이 스킬에 다시 쓰지 않는다. **이 내용은 이 저장소에만 둔다.** 대상 저장소에는 빌드에 꼭 필요한 파일(`build` 스크립트, `.node-version`, `_routes.json` 같은 동작 파일)만 고치고, 이 스킬이나 표준 문서의 내용·링크를 `AGENTS.md`·`README.md`·베이스라인에 복사하지 않는다.
+프로젝트의 Cloudflare Pages 설정을 이 저장소의 표준에 맞춘다. 표준·API 절차·제약의 정본은 `docs/cloudflare-pages.md`이고 이 스킬에 다시 쓰지 않는다.
 
-## 호출 형태
+## 실행 위치
 
-- **A. 작업 폴더가 대상**: 사용자가 대상 프로젝트 폴더에서 이 저장소 링크와 함께 "Cloudflare Pages 배포해줘"라고 한다. 대상은 그 폴더의 저장소(`git remote`의 `owner/name`)이고 이 저장소의 사본이 아니다. 폴더 안 파일은 직접 고친다.
-- **B. 저장소를 지정**: 사용자가 이 저장소(`ysm_skills`) 폴더에서 "(대상) 저장소를 Cloudflare Pages 배포해줘"라고 한다. 대상 저장소는 `gh api`로만 읽고, 코드 변경이 필요하면 직접 고치지 않는다(4단계).
+**Cloudflare 배포와 관리는 이 저장소(`ysm_skills`) 폴더에서만 한다.** Cloudflare API 토큰이 이 저장소의 `.env`(또는 환경변수)에만 있기 때문이다. 다른 프로젝트 폴더에서 이 저장소를 참조해 배포하는 방식은 쓰지 않는다. 그런 요청이 오면 이 저장소 폴더에서 다시 요청하라고 안내하고 멈춘다.
+
+사용자는 이 폴더에서 "(소유자/대상 저장소)를 Cloudflare Pages 배포해줘"라고 한다. 대상 저장소는 `gh api`로만 읽고, 코드 변경이 필요하면 직접 고치지 않는다(4단계). 이 스킬이나 표준 문서의 내용·링크를 대상 저장소의 `AGENTS.md`·`README.md`·베이스라인에 복사하지 않는다.
 
 ## 0. 준비
 
-표준 문서는 이 컴퓨터에 저장소가 있다고 가정하지 않고 읽는다. 플러그인으로 설치된 경우 그 경로를, 아니면 원격 저장소를 임시 폴더로 받아 쓴다.
-
-<!-- ysm-locate:start -->
-```sh
-src="${CLAUDE_PLUGIN_ROOT:-}"
-if [ ! -f "$src/baseline/apply.sh" ]; then
-  src="$(mktemp -d)/ysm-skills"
-  gh repo clone yimsemin/ysm-skills "$src" -- --depth 1 -q 2>/dev/null \
-    || git clone --depth 1 -q https://github.com/yimsemin/ysm-skills "$src"
-fi
-```
-<!-- ysm-locate:end -->
-
-셸 변수는 명령 호출 사이에 유지되지 않는다. 위 블록과 `$src`를 쓰는 명령은 한 번의 실행으로 묶거나, 출력한 경로를 이후 명령에 직접 적는다. 받은 뒤 `$src/docs/cloudflare-pages.md`를 끝까지 읽는다. 이 저장소가 작업 폴더(B)면 그 파일을 바로 읽는다.
+`docs/cloudflare-pages.md`를 끝까지 읽는다.
 
 ## 1. 자격을 확인한다
 
@@ -38,7 +26,7 @@ fi
 
 ## 2. 대상 저장소의 사실을 모은다
 
-`gh api`로 읽는다(A는 로컬 파일도 읽는다). 값을 지어내지 않는다.
+`gh api`로 읽는다. 값을 지어내지 않는다.
 
 - 기본 브랜치, 브랜치 목록(`main`, `develop` 유무), 이미 있는 PR 흐름.
 - `package.json`의 `build` 스크립트와 패키지 매니저(락파일), 워크스페이스 여부, 빌드 출력 폴더(`vite.config`, `scripts` 등), `.node-version`·`.nvmrc`·`engines`.
@@ -58,8 +46,7 @@ Pages 프로젝트 목록과 대상 이름의 프로젝트(있다면 `GET .../pr
 
 저장소 쪽 선행 변경이 있으면 Cloudflare 프로젝트를 만들기 전에 끝낸다(첫 빌드가 `main`의 상태로 돈다).
 
-- **A**: 작업 폴더에서 직접 고친다. `npm run build`를 실제로 실행해 `dist`가 만들어지는지 확인한다. 커밋·푸시·`develop` 브랜치 푸시는 사용자가 요청할 때 한다. 푸시 전에는 Cloudflare 쪽 생성을 진행하지 않고, 푸시가 필요하다고 알린다.
-- **B**: 대상 저장소를 이 폴더에서 고치지 않는다. 필요한 변경과 이유를 짧은 프롬프트로 써서 사용자가 대상 저장소에서 실행하게 하거나, 사용자가 시키면 클라우드 세션(`start_session`의 `target: "cloud"`와 `repository`)으로 맡긴다. 프롬프트에는 대상 브랜치, 바꿀 파일, 확인 명령, "커밋 후 푸시까지만, PR·병합 금지"를 적는다.
+대상 저장소를 이 폴더에서 고치지 않는다. 필요한 변경과 이유를 짧은 프롬프트로 써서 사용자가 대상 저장소에서 실행하게 하거나, 사용자가 시키면 클라우드 세션(`start_session`의 `target: "cloud"`와 `repository`)으로 맡긴다. 프롬프트에는 대상 브랜치, 바꿀 파일, 확인 명령, "커밋 후 푸시까지만, PR·병합 금지"를 적는다.
 
 ## 5. Cloudflare 쪽 실행
 
