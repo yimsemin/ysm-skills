@@ -61,11 +61,11 @@ sh "$src/baseline/apply.sh" --noreply-email .
 ## 5. 검증하고 보고한다
 
 - `git config core.hooksPath`가 `.githooks`이고 `git config user.email`이 noreply인지 확인한다.
-- 이 폴더의 GitHub 원격 저장소가 있고 admin 권한이면, 병합 후 원격 브랜치 자동 삭제 설정을 점검하고 꺼져 있으면 켠다. 권한이 없으면 켜지 못했다고 보고한다. 저장소가 아직 없으면 사용자가 생성을 요청할 때 함께 켠다.
+- 이 폴더의 GitHub 원격 저장소가 있고 admin 권한이면, "Automatically delete head branches" 설정을 점검하고 켜져 있으면 끈다(`develop` 같은 장기 브랜치가 릴리스 PR 병합 때 지워지는 것을 막기 위함이며, 작업 브랜치 정리는 규칙에 따라 에이전트가 한다). 권한이 없으면 끄지 못했다고 보고한다. 저장소가 아직 없으면 사용자가 생성을 요청할 때 함께 확인한다.
 
   ```sh
   gh repo view --json deleteBranchOnMerge,viewerPermission
-  gh api -X PATCH repos/{owner}/{repo} -F delete_branch_on_merge=true
+  gh api -X PATCH repos/{owner}/{repo} -F delete_branch_on_merge=false
   ```
 
 - 만든 파일을 짧게 보고하고, 사용자가 정해야 할 것을 질문으로 남긴다. 첫 커밋과 GitHub 저장소 생성은 사용자가 요청할 때 한다(첫 커밋은 `main`, 제목 예: `chore: initialize project`).
