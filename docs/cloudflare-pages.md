@@ -31,13 +31,15 @@
 
 ## API 절차
 
-각 셸 호출은 변수를 이어받지 못하므로 블록마다 처음 5줄을 포함한다. 토큰은 출력하지 않는다.
+각 셸 호출은 변수를 이어받지 못하므로 블록마다 처음 7줄을 포함한다. 토큰은 출력하지 않는다. `jq`는 설치돼 있지 않을 수 있고 전역 설치도 하지 않으므로 쓰지 않는다. JSON 값은 아래 `jv`로 뽑으며, `python3`·`python`이 둘 다 실행되지 않으면 `uv run python`을 쓴다(Windows의 `python3`는 실행되지 않는 스토어 별칭일 수 있어 실행해 보고 고른다).
 
 ```sh
-T="${CLOUDFLARE_API_TOKEN:-$(grep -m1 '^CLOUDFLARE_API_TOKEN=' .env 2>/dev/null | cut -d= -f2- | tr -d "\"'")}"
+T="${CLOUDFLARE_API_TOKEN:-$(grep -m1 '^CLOUDFLARE_API_TOKEN=' .env 2>/dev/null | cut -d= -f2- | tr -d "\"'\r")}"
 H="Authorization: Bearer $T"; B=https://api.cloudflare.com/client/v4; J="Content-Type: application/json"
-AID=$(curl -s -H "$H" $B/accounts | jq -r '.result[0].id')                     # 계정이 둘 이상이면 사용자에게 묻는다
-ZID=$(curl -s -H "$H" "$B/zones?name=<루트 도메인>" | jq -r '.result[0].id')   # 영역은 같은 계정에 있어야 한다
+PY=$(for c in python3 python; do "$c" -c "" >/dev/null 2>&1 && { echo $c; break; }; done); export PYTHONUTF8=1
+jv(){ "$PY" -I -c "import sys,json;d=json.load(sys.stdin);print($1)" | tr -d '\r'; }  # 사용: ... | jv "d['result'][0]['id']"
+AID=$(curl -s -H "$H" $B/accounts | jv "d['result'][0]['id']")                    # 계정이 둘 이상이면 사용자에게 묻는다
+ZID=$(curl -s -H "$H" "$B/zones?name=<루트 도메인>" | jv "d['result'][0]['id']")  # 영역은 같은 계정에 있어야 한다
 P=<프로젝트>
 ```
 
@@ -50,7 +52,7 @@ P=<프로젝트>
      "preview_deployment_setting":"custom","preview_branch_includes":["develop"],"preview_branch_excludes":[]}},
    "build_config":{"build_command":"npm run build","destination_dir":"dist","root_dir":""}}
   ```
-- **설정 변경**: `PATCH .../projects/$P`. 소스 설정은 기존 값을 읽어 필요한 필드만 바꿔 통째로 보낸다(`jq '.result.source|.config += {...}'`). 빌드 설정은 `{"build_config":{...}}`만 보내도 된다.
+- **설정 변경**: `PATCH .../projects/$P`. 소스 설정은 기존 값을 읽어 필요한 필드만 바꿔 `{"source":...}` 전체를 보낸다(파이썬으로 `d['result']['source']['config'][...]=...` 후 `json.dumps`). 빌드 설정은 `{"build_config":{...}}`만 보내도 된다.
 - **첫 배포·재배포**: `POST .../projects/$P/deployments`에 `-F branch=main`. 상태는 `GET .../deployments/<id>`의 `.result.latest_stage`(`queued`→`clone_repo`→`build`→`deploy`), 로그는 `.../deployments/<id>/history/logs`.
 - **도메인**: `POST .../projects/$P/domains`에 `{"name":"<도메인>"}`, 그다음 `POST $B/zones/$ZID/dns_records`에 `{"type":"CNAME","name":"<도메인>","content":"<프로젝트>.pages.dev","proxied":true}`. 상태는 `GET .../domains/<도메인>`(인증서 발급 중에는 `pending`이어도 접속된다).
 - **삭제**: `DELETE .../projects/$P`. 같은 이름이 필요해 지우기 전에는 임시 이름으로 같은 설정을 만들어 빌드와 응답을 확인한다.
@@ -63,6 +65,10 @@ P=<프로젝트>
 - Git 연동 생성에는 Cloudflare의 GitHub 앱이 해당 저장소에 권한을 가져야 한다. API가 이를 거절하면 대시보드에서 저장소 연결을 한 번 승인해야 한다.
 - 도메인을 Worker에서 Pages로 옮길 때는 Worker 쪽 연결을 풀어야 Worker가 만든 읽기 전용 DNS 레코드가 사라지고 CNAME을 만들 수 있다. 전환 중 잠깐 끊긴다. 로컬 DNS 캐시 때문에 몇 분간 이 컴퓨터에서만 안 열릴 수 있으며 `dig @1.1.1.1`로 확인한다.
 - 커스텀 도메인 DNS의 루트 영역에 메일 등 다른 레코드가 있으면 건드리지 않는다.
+- 프로젝트 목록 조회에 `per_page`를 붙이지 않는다(50은 거절된다). 한 페이지는 10개이므로 `result_info.total_pages`를 읽는다.
+- `<프로젝트>.pages.dev`는 개발이 아니라 프로덕션(`main`)과 같은 내용이다. 개발은 `develop.<프로젝트>.pages.dev`다. 이름이 이미 쓰이면 `wakeup-1tj`처럼 접미사가 붙으므로 실제 주소는 프로젝트의 `subdomain` 필드로 확인한다.
+- 빌드 명령에 `npm ci`를 붙이지 않는다. Pages가 빌드 전에 `npm clean-install`을 자동 실행한다.
+- 저장소와 GitHub 앱 권한이 정상인데 클론 단계가 `Repository not found`로 실패하면 같은 브랜치를 재배포한다. 재배포로 풀리는 경우가 있다.
 
 ## 확인 항목
 
