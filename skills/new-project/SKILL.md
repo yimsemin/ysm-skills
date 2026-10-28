@@ -68,4 +68,16 @@ sh "$src/baseline/apply.sh" --noreply-email .
   gh api -X PATCH repos/{owner}/{repo} -F delete_branch_on_merge=false
   ```
 
+- 원격 저장소가 **public**이고 admin 권한이면 외부 기여 방어 설정을 점검해 맞춘다. private이면 건너뛰고(무료 플랜은 브랜치 보호·포크 PR 설정이 불가) 공개로 전환할 때 같은 설정을 적용한다고 안내한다. 실패한 항목은 중단하지 말고 보고한다. `main` 직행 프로젝트이므로 PR 필수는 넣지 않는다.
+
+  ```sh
+  gh api -X PUT repos/{owner}/{repo}/actions/permissions/fork-pr-contributor-approval -f approval_policy=all_external_contributors
+  gh api -X PATCH repos/{owner}/{repo} --input - <<'EOF'
+  {"security_and_analysis":{"secret_scanning":{"status":"enabled"},"secret_scanning_push_protection":{"status":"enabled"}}}
+  EOF
+  gh api -X PUT repos/{owner}/{repo}/branches/main/protection --input - <<'EOF'
+  {"required_status_checks":null,"enforce_admins":false,"required_pull_request_reviews":null,"restrictions":null,"allow_force_pushes":false,"allow_deletions":false}
+  EOF
+  ```
+
 - 만든 파일을 짧게 보고하고, 사용자가 정해야 할 것을 질문으로 남긴다. 첫 커밋과 GitHub 저장소 생성은 사용자가 요청할 때 한다(첫 커밋은 `main`, 제목 예: `chore: initialize project`).

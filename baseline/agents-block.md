@@ -38,3 +38,4 @@
 
 - 저장소는 언제 공개되어도 문제가 없는 상태로 유지한다. `.env`, 키, 토큰, 개인정보, 개인 절대경로, 개인 취향·운영 데이터, 실제 업무 문서를 저장소에 넣거나 읽어 출력하지 않는다. 환경변수 예시는 값이 없는 `.env.example`만 둔다.
 - 비밀값으로 보이는 파일·문자열이 staged에 있으면 `.githooks/pre-commit`이 커밋을 막는다.
+- GitHub Actions 워크플로는 `permissions: contents: read`로 시작하고 `pull_request_target`은 쓰지 않으며, 포크 PR 실행에 시크릿을 노출하지 않는다.
