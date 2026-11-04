@@ -1,32 +1,31 @@
 ---
 name: audit-docs
-description: Audit a project's documents and skills for stale facts, duplicates, contradictions and filler, then fix them so only the current state remains. Use after a batch of commits, a direction change, a release, or when the user asks to check or clean up docs. 문서 점검, 낡은 정보·중복·모순·사족 정리, 문서 최종본 정리.
+description: Audit a project's documents and skills for stale information, duplicates, contradictions and filler, fix them so only the current state remains, and report what was changed per category. Use after a batch of commits, a direction change, a release, or when the user asks to check or clean up docs. 문서 점검, 낡은 정보·중복·모순·사족 정리, 문서 최종본 정리.
 ---
 
 # audit-docs
 
-문서와 스킬에 **현재 상태만** 남긴다. 수정 요청이 없어도 큰 변경·커밋 묶음·릴리즈 뒤에는 이 점검을 한다.
+문서와 스킬에 **현재 상태만** 남긴다. 큰 변경·커밋 묶음·릴리즈 뒤에는 요청이 없어도 한다.
 
-## 1. 범위를 정한다
+## 1. 범위
 
-`git ls-files '*.md'`로 문서를 모으고, 프로젝트에 스킬(`.claude/skills`, `skills/`)이 있으면 포함한다. 입력 문서·로그·생성물은 제외한다. 사용자가 범위를 줬으면 그것만 본다.
+`git ls-files '*.md'`와 프로젝트의 스킬 파일을 본다. 입력 문서·로그·생성물은 제외하고, 사용자가 범위를 줬으면 그것만 본다.
 
-## 2. 읽고 찾는다
+## 2. 점검
 
-문서를 부분 읽기·`grep`으로 훑고, 코드·설정·명령과 대조해 아래를 찾는다. 대조하지 않은 항목을 모순이라고 단정하지 않는다.
+코드·설정·명령과 대조해 확인한 것만 판정한다.
 
 - **낡은 정보**: 없어진 파일·명령·옵션, 바뀐 버전·경로, 끝났는데 남은 로드맵 항목.
-- **중복**: 같은 규칙·사실이 둘 이상의 문서에 있는 것(전역·베이스라인과 겹치는 문장 포함). 한 곳만 남기고 링크한다.
+- **중복**: 같은 규칙·사실이 둘 이상에 있는 것(전역·베이스라인과 겹치는 문장 포함). 한 곳만 남기고 링크한다.
 - **모순**: 문서끼리, 또는 문서와 실제 동작이 다른 것. 실제 동작을 확인해 맞는 쪽으로 고친다.
-- **사족**: 경위, 폐기한 안, "~하지 않기로 함", 일반론, 같은 말의 반복, 강조용 덧붙임. 지운다.
-- **자리**: 베이스라인 "문서" 구역의 규칙(문서 종류별 자리, `docs/`)과 어긋난 것은 옮기거나 합친다.
+- **사족**: 경위, 폐기한 안, "~하지 않기로 함", 일반론, 반복. 지운다.
 
-## 3. 고친다
+문서 위치는 베이스라인 "문서" 구역을 따른다.
 
-- 기본은 고치는 것까지 한다. 사용자가 "있는지 봐줘"처럼 확인만 요청했으면 목록과 제안만 보고한다. 문서를 늘리기보다 합친다.
-- 의미가 바뀌는 수정(규칙 삭제, 방향 해석)은 고치지 말고 결정 항목으로 남긴다.
-- 커밋은 사용자가 요청할 때 의미 단위로 한다.
+## 3. 수정
 
-## 4. 보고한다
+기본은 고치는 것까지 한다. "있는지 봐줘"처럼 확인만 요청했으면 목록과 제안만 보고한다. 의미가 바뀌는 수정(규칙 삭제, 방향 해석)은 결정 항목으로 남긴다. 커밋은 사용자가 요청할 때 한다.
 
-"고친 것 / 확인하지 못한 것 / 하지 않은 것"으로 나눈다. 고친 항목은 파일별 한 줄로 쓰고, 사용자가 결정할 항목을 맨 위에 둔다.
+## 4. 보고
+
+사용자가 결정할 항목을 맨 위에 두고, 이어서 **낡은 정보 / 중복 / 모순 / 사족별로 무엇을 어떻게 고쳤는지** 파일 단위로 쓴다. 해당 없는 분류는 "없음"이라고 쓴다. 확인하지 못한 것과 하지 않은 것도 쓴다.
