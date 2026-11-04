@@ -18,17 +18,18 @@ sh global/apply-global.sh --check          # 이 컴퓨터의 전역 지침 상�
 ## 작업 방식
 
 - 혼자 쓰는 저장소이므로 작업 브랜치 없이 `main`에서 바로 커밋한다(베이스라인의 브랜치 규칙 예외).
+- 버전(`baseline/VERSION`, `global/VERSION`, `.claude-plugin/plugin.json`)은 사용자가 올리라고 지시할 때만 올린다.
 
 ## 구조
 
 - 이 저장소 링크와 함께 새 프로젝트의 기본 셋팅 요청이 오면 `skills/new-project/SKILL.md`를 따른다. 대상은 사용자가 에이전트를 연 작업 폴더이고 이 저장소의 사본이 아니다. 첫 단계가 전역 지침 점검(`skills/setup-machine`)이다.
 - Cloudflare 배포·관리는 이 저장소에서만 한다(API 토큰이 이 저장소 `.env`에만 있다). 이 저장소에서 대상 저장소의 Pages 배포를 요청받으면 `skills/deploy-cloudflare-pages/SKILL.md`를 따르고, 다른 프로젝트 폴더에서 온 요청은 이 저장소에서 다시 하도록 안내한다. 기준의 정본은 `docs/cloudflare-pages.md`이며 이 내용은 이 저장소에만 두고 `baseline/`·`global/`·대상 저장소 문서로 복사하지 않는다.
 - `skills/<name>/SKILL.md`: 오픈 표준 스킬. 폴더명 = `name`(영문 kebab-case), `description`은 한영 키워드 병기, 본문은 한국어. 스킬은 이 컴퓨터에 저장소가 있다고 가정하지 않고, 플러그인 경로(`CLAUDE_PLUGIN_ROOT`) 또는 원격 저장소를 임시 폴더로 받아 쓴다(`ysm-locate` 블록, 스킬마다 동일해야 한다).
-- `baseline/`: 프로젝트로 **복사**되는 저장소 규칙의 정본. `files/`는 그대로 복사, `agents-block.md`는 AGENTS.md의 마커 구역에 삽입. 바꾸면 `baseline/VERSION`을 올린다. 프로젝트에는 기반 버전이 커밋되지 않는 `.env.baseline`에만 기록된다.
-- `global/`: `agents.md`(전역 지침)와 `settings.json`(`gh issue` 쓰기를 항상 확인하게 하는 설정)의 정본. `apply-global.sh`가 `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`의 마커 구역과 `~/.claude/settings.json`에만 쓰고, 승인 없이 쓰지 않는다. 바꾸면 `global/VERSION`을 올린다. `chat.md`는 claude.ai 계정 설정에 붙여넣는 대화용 지침이며 `agents.md`와 겹치는 줄은 서로 다른 화면용이라 허용하되, 바꿀 때 함께 확인한다.
+- `baseline/`: 프로젝트로 **복사**되는 저장소 규칙의 정본. `files/`는 그대로 복사, `agents-block.md`는 AGENTS.md의 마커 구역에 삽입. 프로젝트에는 기반 버전이 커밋되지 않는 `.env.baseline`에만 기록된다.
+- `global/`: `agents.md`(전역 지침)와 `settings.json`(`gh issue` 쓰기를 항상 확인하게 하는 설정)의 정본. `apply-global.sh`가 `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`의 마커 구역과 `~/.claude/settings.json`에만 쓰고, 승인 없이 쓰지 않는다. `chat.md`는 claude.ai 계정 설정에 붙여넣는 대화용 지침이며 `agents.md`와 겹치는 줄은 서로 다른 화면용이라 허용하되, 바꿀 때 함께 확인한다.
 - 전역과 베이스라인에 같은 규칙을 두지 않는다. 판단 기준은 "저장소 없이도 성립하는가"이고, 성립하면 전역이다. 어느 쪽을 고치든 겹치는 문장이 없는지 에이전트가 직접 확인한다.
 - 루트의 `.githooks/`, `.claude/`, `.github/`, `.gitignore`, `.editorconfig`, `.gitattributes`, `CLAUDE.md`와 이 파일의 마커 구역은 baseline의 사본이다. 직접 고치지 말고 `baseline/`을 고친 뒤 `sh baseline/apply.sh .`로 갱신한다.
-- `.claude-plugin/`: Claude Code 마켓플레이스·플러그인 매니페스트. 플러그인 변경을 푸시할 때 `plugin.json`의 version도 올린다.
+- `.claude-plugin/`: Claude Code 마켓플레이스·플러그인 매니페스트.
 - `docs/references.md`: 참고한 외부 자료와 가져온 원칙.
 - 이 저장소의 내용에는 회사·개인 전용 정보, 비밀값을 넣지 않는다(공개 전환을 고려).
 
@@ -41,7 +42,7 @@ sh global/apply-global.sh --check          # 이 컴퓨터의 전역 지침 상�
 
 - 루트에는 `README.md`·`AGENTS.md`·`CLAUDE.md`·`LICENSE`·`CHANGELOG.md`처럼 관례상 필요한 파일만 두고, 기획·인수인계·결정 기록·가이드 같은 나머지 문서는 `docs/`에 둔다. 사용자가 폴더에 넣어 둔 입력 문서도 `docs/`로 옮긴다.
 - 같은 규칙·사실은 한 문서에만 쓰고 나머지는 링크한다. 문서 종류마다 자리를 하나로 정한다(README는 개요·사용법, 로드맵은 앞으로 할 일만이며 끝난 항목은 지운다). 문서를 늘리기보다 합친다. 날짜를 박은 "현재 수준" 표를 두지 않는다.
-- 방향이 바뀌거나 큰 변경·커밋 묶음·릴리즈가 끝나면 요청이 없어도 문서 간 모순·중복·낡은 내용·사족을 점검한다(스킬 `audit-docs`).
+- 방향이 바뀌거나 큰 변경·커밋 묶음·릴리즈가 끝나면 요청이 없어도 낡은 정보·중복·모순·사족을 점검하고 무엇을 고쳤는지 보고한다(스킬 `audit-docs`).
 - `CHANGELOG.md`는 Added·Changed·Fixed·Removed로 나누고, 같은 주제는 한 줄로 합쳐 간결하게 쓴다.
 - 작업 끝에 다음에도 쓸모 있는 시행착오만 문서나 스킬에 사족 없이 남긴다.
 
@@ -57,6 +58,7 @@ sh global/apply-global.sh --check          # 이 컴퓨터의 전역 지침 상�
 - 첫 커밋 이후의 작업은 `main`이 아닌 작업 브랜치(`feat/` `fix/` `docs/` `chore/` + kebab-case)에서 한다. 프로젝트가 `main` 직행을 명시하면 예외다. 병렬 작업은 브랜치마다 `git worktree`로 분리한다.
 - 커밋은 의미·작업 단위 하나씩 만든다. 같은 목적의 후속 수정(오타·누락·리뷰 반영)은 새 커밋으로 쌓지 말고 푸시 전에 amend·fixup으로 합쳐 원격 이력을 깔끔하게 유지한다.
 - 프로젝트가 `develop`을 쓴다고 명시하면 작업 브랜치는 `develop`에서 따서 `develop`으로 병합하고(미리보기), `main`은 릴리즈로만 갱신한다(정식). 릴리즈 요청은 버전 결정·CHANGELOG·병합·태그·브랜치 정리·검증까지 전체이며(스킬 `release-project`), 병합 요청은 릴리즈를 뜻하지 않는다.
+- 버전은 사용자가 올리라고 지시했거나 릴리즈를 요청받았을 때만 올린다. 커밋·푸시마다 올리지 않는다.
 - 커밋 제목은 `<type>(<선택 scope>): <요약>`이다. type은 `feat` `fix` `perf` `refactor` `docs` `test` `build` `ci` `chore` `style` `revert`, 72자 이내, 끝에 마침표 없음. 형식은 `.githooks/commit-msg`가 검사한다. 이유가 필요하면 본문에 쓴다. 제목 언어는 프로젝트가 정한다.
 - 커밋 이메일은 GitHub noreply 주소를 쓴다(프로젝트에 설정되어 있으면 `.githooks/pre-commit`이 검사한다).
 - PR 본문은 요약(무엇을·왜), 확인한 방법(실제 실행한 것만), 남은 결정 순서로 짧게 쓴다(`.github/pull_request_template.md`).
@@ -67,6 +69,7 @@ sh global/apply-global.sh --check          # 이 컴퓨터의 전역 지침 상�
 ### 코드와 테스트
 
 - 테스트는 중요한 동작과 회귀 위험만 둔다. 극단 상황, 다른 테스트와 중복, 구현 세부 확인은 쓰지 않고, 빨리 끝난다는 이유만으로 남기지 않는다.
+- 기존 테스트도 검증한다. 단언이 없거나 항상 통과하는 것, 건너뛴 것, 불안정한 것을 찾고, 핵심 테스트는 대상 동작을 임시로 깨 보아 실패하는지 확인한다. 통과시키려고 기대값을 현재 결과에 맞추지 않는다.
 - 코드를 바꾸면 쓰지 않게 된 코드·스타일·의존성·테스트를 같은 변경에서 지운다. 큰 변경이 끝나면 구조·중복·미사용을 점검한다(스킬 `tidy-code`).
 
 ### 의존성과 환경
