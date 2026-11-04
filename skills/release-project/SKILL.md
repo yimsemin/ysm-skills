@@ -9,12 +9,12 @@ description: Run a project's whole release procedure - decide version, update CH
 
 ## 1. 현재 상태를 확인한다
 
-한 명령으로 묶어 조회한다: 현재 브랜치, 미커밋 변경, `develop`·`main` 존재와 차이, 마지막 태그 이후 커밋, 버전이 적힌 파일(`package.json`·`pyproject.toml`·`VERSION`), CHANGELOG 형식, CI 상태. `develop`이 없으면 `main` 직행 프로젝트로 보고, 2단계의 "병합"을 건너뛰고 `main`에 태그한다. 미커밋 변경이 있으면 사용자 것인지 확인하고 멈춘다.
+한 명령으로 묶어 조회한다: 현재 브랜치, 미커밋 변경, `develop`·`main` 존재와 차이, 마지막 태그 이후 커밋, 버전이 적힌 파일(`package.json`·`pyproject.toml`·`VERSION`), CHANGELOG 형식, CI 상태. `develop`이 없으면 `main` 직행 프로젝트로 보고, 4단계의 `develop` → `main` 병합을 건너뛰고 `main`에 태그한다. 미커밋 변경이 있으면 사용자 것인지 확인하고 멈춘다.
 
 ## 2. 버전과 내용을 정한다
 
 - 마지막 태그 이후 커밋으로 SemVer 증분을 정한다. 호환을 깨면 major, 기능 추가는 minor, 수정은 patch. 사용자가 버전을 줬으면 그대로 쓰고, 애매하면 권장안과 함께 묻는다.
-- CHANGELOG에 Added·Changed·Fixed·Removed로 나눠 쓴다. 같은 주제는 한 줄로 합치고, 내부 정리·문서 오탈자는 쓰지 않는다. 날짜는 릴리즈 날짜이다.
+- CHANGELOG는 베이스라인 "문서" 구역의 규칙대로 쓰고, 내부 정리·문서 오탈자는 넣지 않는다. 날짜는 릴리즈 날짜이다.
 - 버전 파일과 CHANGELOG 변경은 릴리즈 준비 커밋 하나로 한다(`chore(release): vX.Y.Z`). 프로젝트 규칙이 다른 방식(예: 준비 PR)을 정했으면 그것을 따른다.
 
 ## 3. 검증한다
