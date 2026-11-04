@@ -46,9 +46,10 @@ yimsemin/<대상 저장소>를 Cloudflare Pages 배포해줘
 | `new-project` | 빈 폴더에서 의도부터 시작해 베이스라인 적용 | 사용 가능 |
 | `setup-machine` | 이 컴퓨터의 전역 지침·설정 점검과 갱신(승인 후) | 사용 가능 |
 | `deploy-cloudflare-pages` | 프로젝트의 Cloudflare Pages 배포를 표준에 맞춰 만들거나 점검(API, 승인 후) | 사용 가능 |
-| `adopt-project` | 기존·인수 프로젝트를 수정 없이 진단한 뒤 승인받아 맞춤(트레일러 차단, 이력 정리 포함) | 예정 |
+| `adopt-project` | 기존·인수 프로젝트를 수정 없이 진단한 뒤 승인받아 맞춤(트레일러 차단, 이력 정리 포함) | 사용 가능 |
 | `sync-project` | 베이스라인 갱신 반영 | 예정 |
-| `audit-docs` | 문서의 낡은 내용·모순·중복·사족 점검 | 예정 |
+| `audit-docs` | 문서의 낡은 내용·모순·중복·사족 점검 | 사용 가능 |
+| `release-project` | 릴리즈 요청 시 버전·CHANGELOG·검증·병합·태그·브랜치 정리까지 전체 절차 | 사용 가능 |
 | `handoff` | 다음 대화방에 붙여 넣을 짧은 인계 프롬프트 작성 | 예정 |
 | `review-journey` | 처음 보는 사용자 기준 전면 재점검 | 예정 |
 
