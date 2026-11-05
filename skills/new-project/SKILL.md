@@ -48,7 +48,7 @@ sh "$src/baseline/apply.sh" --noreply-email .
 
 저장소를 받을 수 없으면(권한·로그인 없음) 사용자에게 `gh auth login`과 저장소 접근 권한을 안내하고 멈춘다. 베이스라인을 기억에 의존해 재현하지 않는다.
 
-스크립트는 기존 파일을 덮어쓰지 않는다. 출력의 `DIFFERS` 줄이 있으면 해당 파일을 읽고 `$src/baseline/files/<경로>`와 비교해 병합한다. 사용자 내용이 우선이다. `INFO noreply-email SKIPPED`가 나오면 `gh auth login`을 안내한다.
+스크립트는 기존 파일을 덮어쓰지 않는다. 출력의 `DIFFERS` 줄이 있으면 해당 파일을 읽고 `$src/baseline/files/<경로>`와 비교해 병합한다. 베이스라인을 따르는 것이 기본이고, 사용자 내용에 유지할 만한 특별한 이점이 있으면 사용자 내용을 유지하며, 이점이 분명하지 않거나 애매하면 사용자에게 묻는다. `INFO noreply-email SKIPPED`가 나오면 `gh auth login`을 안내한다.
 
 ## 4. 프로젝트 내용을 채운다
 
