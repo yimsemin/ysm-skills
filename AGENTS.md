@@ -58,6 +58,7 @@ sh global/apply-global.sh --check          # 이 컴퓨터의 전역 지침 상�
 - 첫 커밋 이후의 작업은 `main`이 아닌 작업 브랜치(`feat/` `fix/` `docs/` `chore/` + kebab-case)에서 한다. 프로젝트가 `main` 직행을 명시하면 예외다. 병렬 작업은 브랜치마다 `git worktree`로 분리한다.
 - 커밋은 의미·작업 단위 하나씩 만든다. 같은 목적의 후속 수정(오타·누락·리뷰 반영)은 새 커밋으로 쌓지 말고 푸시 전에 amend·fixup으로 합쳐 원격 이력을 깔끔하게 유지한다.
 - 프로젝트가 `develop`을 쓴다고 명시하면 작업 브랜치는 `develop`에서 따서 `develop`으로 병합하고(미리보기), `main`은 릴리즈로만 갱신한다(정식). 릴리즈 요청은 버전 결정·CHANGELOG·병합·태그·브랜치 정리·검증까지 전체이며(스킬 `release-project`), 병합 요청은 릴리즈를 뜻하지 않는다.
+- GitHub 기본 브랜치는 항상 `main`이다. `develop`을 쓰는 프로젝트도 `develop`은 기본 브랜치로 두지 않는다. Dependabot 설정은 기본 브랜치에 있어야 적용되므로 `develop`에서 바꾼 설정은 릴리즈 뒤에 적용된다.
 - 버전은 사용자가 올리라고 지시했거나 릴리즈를 요청받았을 때만 올린다. 커밋·푸시마다 올리지 않는다.
 - 커밋 제목은 `<type>(<선택 scope>): <요약>`이다. type은 `feat` `fix` `perf` `refactor` `docs` `test` `build` `ci` `chore` `style` `revert`, 72자 이내, 끝에 마침표 없음. 형식은 `.githooks/commit-msg`가 검사한다. 이유가 필요하면 본문에 쓴다. 제목 언어는 프로젝트가 정한다.
 - 커밋 이메일은 GitHub noreply 주소를 쓴다(프로젝트에 설정되어 있으면 `.githooks/pre-commit`이 검사한다).
@@ -78,6 +79,7 @@ sh global/apply-global.sh --check          # 이 컴퓨터의 전역 지침 상�
   - Node: `package.json`의 `devDependencies`와 `npx`.
   - Python: `uv`로 프로젝트 `.venv`만 쓴다(`uv sync`, `uv add`).
   - 런타임 버전은 `.node-version`, `.python-version`에만 고정한다. `mise.toml`은 두지 않는다.
+- 활성 저장소는 Dependabot 보안 알림·보안 업데이트를 켜고, 버전 업데이트는 ysm-skills의 `baseline/dependabot.yml` 표준(매주 월요일, minor·patch 묶음, major 개별)을 복사해 쓴다. 보관했거나 1년 넘게 커밋이 없는 저장소는 설정 파일 없이 보안 알림만 둔다. Dependabot PR은 자동 병합하지 않고, 병합은 사용자가 요청할 때만 하며 병합 뒤 `dependabot/` 브랜치를 지운다.
 - macOS와 Windows에서 같은 동작을 하도록 플랫폼 중립 경로와 LF 줄바꿈을 쓴다.
 
 ### 안전

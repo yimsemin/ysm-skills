@@ -60,6 +60,6 @@ yimsemin/<대상 저장소>를 Cloudflare Pages 배포해줘
 
 - 전역 지침: 소통·판단·검증처럼 저장소와 무관한 에이전트 작업 규칙. 정본은 [global/agents.md](global/agents.md)이고 `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`의 마커 구역에 똑같이 들어간다.
 - 대화용 지침: claude.ai 대화에만 적용되는 짧은 지침. [global/chat.md](global/chat.md)를 계정 설정에 직접 붙여넣는다. 변경 이력은 git 이력이다.
-- 베이스라인: 저장소 구조에 따르는 Git·문서·의존성·안전 규칙. 정본은 [baseline/agents-block.md](baseline/agents-block.md)이고 훅·설정 파일은 `baseline/files/`에 있다. `baseline/apply.sh`가 기존 파일을 덮어쓰지 않고 적용한다.
+- 베이스라인: 저장소 구조에 따르는 Git·문서·의존성·안전 규칙. 정본은 [baseline/agents-block.md](baseline/agents-block.md)이고 훅·설정 파일은 `baseline/files/`에 있다. `baseline/apply.sh`가 기존 파일을 덮어쓰지 않고 적용한다. Dependabot 표준 설정은 프로젝트마다 패키지 관리자가 달라 자동 복사하지 않고 [baseline/dependabot.yml](baseline/dependabot.yml)을 복사해 쓴다.
 
 참고한 외부 자료는 [docs/references.md](docs/references.md). 이 저장소를 고칠 때는 [AGENTS.md](AGENTS.md)를 따른다.

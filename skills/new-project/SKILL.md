@@ -63,8 +63,10 @@ sh "$src/baseline/apply.sh" --noreply-email .
 - `git config core.hooksPath`가 `.githooks`이고 `git config user.email`이 noreply인지 확인한다.
 - 이 폴더의 GitHub 원격 저장소가 있고 admin 권한이면, "Automatically delete head branches" 설정을 점검하고 켜져 있으면 끈다(`develop` 같은 장기 브랜치가 릴리스 PR 병합 때 지워지는 것을 막기 위함이며, 작업 브랜치 정리는 규칙에 따라 에이전트가 한다). 권한이 없으면 끄지 못했다고 보고한다. 저장소가 아직 없으면 사용자가 생성을 요청할 때 함께 확인한다.
 
+  기본 브랜치는 `main`으로 둔다(`defaultBranchRef`로 확인).
+
   ```sh
-  gh repo view --json deleteBranchOnMerge,viewerPermission
+  gh repo view --json deleteBranchOnMerge,viewerPermission,defaultBranchRef
   gh api -X PATCH repos/{owner}/{repo} -F delete_branch_on_merge=false
   ```
 
@@ -78,6 +80,13 @@ sh "$src/baseline/apply.sh" --noreply-email .
   gh api -X PUT repos/{owner}/{repo}/branches/main/protection --input - <<'EOF'
   {"required_status_checks":null,"enforce_admins":false,"required_pull_request_reviews":null,"restrictions":null,"allow_force_pushes":false,"allow_deletions":false}
   EOF
+  ```
+
+- 매니페스트(`package.json` 등)나 워크플로가 생기면 `$src/baseline/dependabot.yml`을 `.github/dependabot.yml`로 복사해 그 파일 머리의 안내대로 고친다. 원격 저장소가 있고 admin 권한이면 보안 알림을 켠다.
+
+  ```sh
+  gh api -X PUT repos/{owner}/{repo}/vulnerability-alerts
+  gh api -X PUT repos/{owner}/{repo}/automated-security-fixes
   ```
 
 - 만든 파일을 짧게 보고하고, 사용자가 정해야 할 것을 질문으로 남긴다. 첫 커밋과 GitHub 저장소 생성은 사용자가 요청할 때 한다(첫 커밋은 `main`, 제목 예: `chore: initialize project`).
