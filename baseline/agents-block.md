@@ -51,7 +51,7 @@
   - Python: `uv`로 프로젝트 `.venv`만 쓴다(`uv sync`, `uv add`).
   - 런타임 버전은 `.node-version`, `.python-version`에만 고정한다. `mise.toml`은 두지 않는다.
 - 활성 저장소는 Dependabot 보안 알림·보안 업데이트를 켜고, 버전 업데이트는 ysm-skills의 `baseline/dependabot.yml` 표준(매주 월요일, minor·patch 묶음, major 개별)을 복사해 쓴다. 보관했거나 1년 넘게 커밋이 없는 저장소는 설정 파일 없이 보안 알림만 둔다. Dependabot PR은 자동 병합하지 않고, 병합은 사용자가 요청할 때만 하며 병합 뒤 `dependabot/` 브랜치를 지운다.
-- macOS와 Windows에서 같은 동작을 하도록 플랫폼 중립 경로와 LF 줄바꿈을 쓴다.
+- macOS와 Windows에서 같은 동작을 하도록 플랫폼 중립 경로와 LF 줄바꿈을 쓴다(`.cmd`만 CRLF).
 
 ### 안전
 
