@@ -3,7 +3,7 @@
 ## 프로젝트
 
 - **의도**: 여러 컴퓨터와 새 프로젝트에서 에이전트(Claude Code, Codex) 작업환경을 같은 기준으로 자동 세팅하는 스킬·베이스라인 저장소.
-- **사용자**: 나와 팀원(비개발자 포함). git 사용을 권장한다.
+- **사용자**: 이 저장소를 쓰는 개인과 팀(비개발자 포함). git 사용을 권장한다.
 - **성공 기준**: 빈 폴더에서 `new-project` 한 번으로 베이스라인이 적용되고, 기존 프로젝트는 `adopt-project`로 안전하게 맞춰진다.
 - **하지 않을 것**: 등급·권한 체계, 회사 전용 자료(스킬에 넣지 않는다), ChatGPT 웹용 내보내기.
 
@@ -17,14 +17,14 @@ sh global/apply-global.sh --check          # 이 컴퓨터의 전역 지침 상�
 
 ## 작업 방식
 
-- 혼자 쓰는 저장소이므로 작업 브랜치 없이 `main`에서 바로 커밋한다(베이스라인의 브랜치 규칙 예외).
+- 관리자는 작업 브랜치 없이 `main`에서 바로 커밋한다(베이스라인의 브랜치 규칙 예외).
 - 베이스라인 예외: `CHANGELOG.md`는 두지 않는다(변경 이력은 git 이력). 패키지 매니페스트와 워크플로가 없어 `.github/dependabot.yml`도 두지 않고 GitHub의 Dependabot 보안 알림만 켜 둔다. 매니페스트나 워크플로를 추가하면 `baseline/dependabot.yml`을 복사해 쓴다.
 - 버전(`baseline/VERSION`, `global/VERSION`, `.claude-plugin/plugin.json`)은 사용자가 올리라고 지시할 때만 올린다.
 
 ## 구조
 
 - 이 저장소를 언급하며 새 프로젝트의 기본 셋팅 요청이 오면 `skills/new-project/SKILL.md`를 따른다. 대상은 사용자가 에이전트를 연 작업 폴더이고 이 저장소의 사본이 아니다. 첫 단계가 전역 지침 점검(`skills/setup-machine`)이다.
-- Cloudflare 배포·관리는 이 저장소에서만 한다(API 토큰이 이 저장소 `.env`에만 있다). 이 저장소에서 대상 저장소의 Pages 배포를 요청받으면 `skills/deploy-cloudflare-pages/SKILL.md`를 따르고, 다른 프로젝트 폴더에서 온 요청은 이 저장소에서 다시 하도록 안내한다. 기준의 정본은 `docs/cloudflare-pages.md`이며 이 내용은 이 저장소에만 두고 `baseline/`·`global/`·대상 저장소 문서로 복사하지 않는다.
+- Cloudflare 배포·관리는 이 저장소에서만 한다(API 토큰은 이 저장소 `.env`에만 둔다). 이 저장소에서 대상 저장소의 Pages 배포를 요청받으면 `skills/deploy-cloudflare-pages/SKILL.md`를 따르고, 다른 프로젝트 폴더에서 온 요청은 이 저장소에서 다시 하도록 안내한다. 기준의 정본은 `docs/cloudflare-pages.md`이며 이 내용은 이 저장소에만 두고 `baseline/`·`global/`·대상 저장소 문서로 복사하지 않는다.
 - `skills/<name>/SKILL.md`: 오픈 표준 스킬. 폴더명 = `name`(영문 kebab-case), `description`은 한영 키워드 병기, 본문은 한국어. 스킬은 이 컴퓨터에 저장소가 있다고 가정하지 않고, 플러그인 경로(`CLAUDE_PLUGIN_ROOT`) 또는 원격 저장소를 임시 폴더로 받아 쓴다(`ysm-locate` 블록, 스킬마다 동일해야 한다).
 - `baseline/`: 프로젝트로 **복사**되는 저장소 규칙의 정본. `files/`는 그대로 복사, `agents-block.md`는 AGENTS.md의 마커 구역에 삽입. 프로젝트에는 기반 버전이 커밋되지 않는 `.env.baseline`에만 기록된다.
 - `global/`: `agents.md`(전역 지침)와 `settings.json`(`gh issue` 쓰기를 항상 확인하게 하는 설정)의 정본. `apply-global.sh`가 `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`의 마커 구역과 `~/.claude/settings.json`에만 쓰고, 승인 없이 쓰지 않는다. `chat-claude.md`는 claude.ai, `chat-chatgpt.md`는 ChatGPT 계정 설정에 붙여넣는 대화용 지침(ChatGPT 칸 한도 1500자 이내)이며 `agents.md`와 겹치는 줄은 서로 다른 화면용이라 허용하되, 바꿀 때 함께 확인한다. 직업·자기소개 같은 개인 칸은 저장소에 두지 않는다.
@@ -32,7 +32,7 @@ sh global/apply-global.sh --check          # 이 컴퓨터의 전역 지침 상�
 - 루트의 `.githooks/`, `.claude/`, `.github/`, `.gitignore`, `.editorconfig`, `.gitattributes`, `CLAUDE.md`와 이 파일의 마커 구역은 baseline의 사본이다. 직접 고치지 말고 `baseline/`을 고친 뒤 `sh baseline/apply.sh .`로 갱신한다.
 - `.claude-plugin/`: Claude Code 마켓플레이스·플러그인 매니페스트.
 - `docs/references.md`: 참고한 외부 자료와 가져온 원칙.
-- 이 저장소의 내용에는 회사·개인 전용 정보, 비밀값을 넣지 않는다(공개 전환을 고려).
+- 이 저장소의 내용에는 회사·개인 전용 정보, 비밀값을 넣지 않는다(공개 저장소다).
 
 <!-- ysm-baseline:start -->
 ## 공통 작업 규칙 (ysm baseline)

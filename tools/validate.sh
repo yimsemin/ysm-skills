@@ -32,7 +32,7 @@ blk="$(sed -n '/ysm-baseline:start/,/ysm-baseline:end/p' "$root/AGENTS.md" | sed
 n="$(for f in "$root"/skills/*/SKILL.md; do grep -q 'ysm-locate:start' "$f" && sed -n '/ysm-locate:start/,/ysm-locate:end/p' "$f" | cksum; done | sort -u | wc -l | tr -d ' ')"
 [ "$n" -le 1 ] || err "ysm-locate 블록이 스킬마다 다름"
 
-# 공개를 고려해 비밀·회사 자료가 섞이지 않았는지 간단히 확인한다.
+# 공개 저장소이므로 비밀·회사 자료가 섞이지 않았는지 간단히 확인한다.
 if grep -rIlE '(gh[po]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN (RSA|OPENSSH|EC)? ?PRIVATE KEY-----)' "$root" --exclude-dir=.git --exclude=validate.sh >/dev/null 2>&1; then
   err "비밀값으로 보이는 문자열 발견"
 fi
