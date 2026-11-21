@@ -18,11 +18,12 @@ sh global/apply-global.sh --check          # 이 컴퓨터의 전역 지침 상�
 ## 작업 방식
 
 - 혼자 쓰는 저장소이므로 작업 브랜치 없이 `main`에서 바로 커밋한다(베이스라인의 브랜치 규칙 예외).
+- 베이스라인 예외: `CHANGELOG.md`는 두지 않는다(변경 이력은 git 이력). 패키지 매니페스트와 워크플로가 없어 `.github/dependabot.yml`도 두지 않고 GitHub의 Dependabot 보안 알림만 켜 둔다. 매니페스트나 워크플로를 추가하면 `baseline/dependabot.yml`을 복사해 쓴다.
 - 버전(`baseline/VERSION`, `global/VERSION`, `.claude-plugin/plugin.json`)은 사용자가 올리라고 지시할 때만 올린다.
 
 ## 구조
 
-- 이 저장소 링크와 함께 새 프로젝트의 기본 셋팅 요청이 오면 `skills/new-project/SKILL.md`를 따른다. 대상은 사용자가 에이전트를 연 작업 폴더이고 이 저장소의 사본이 아니다. 첫 단계가 전역 지침 점검(`skills/setup-machine`)이다.
+- 이 저장소를 언급하며 새 프로젝트의 기본 셋팅 요청이 오면 `skills/new-project/SKILL.md`를 따른다. 대상은 사용자가 에이전트를 연 작업 폴더이고 이 저장소의 사본이 아니다. 첫 단계가 전역 지침 점검(`skills/setup-machine`)이다.
 - Cloudflare 배포·관리는 이 저장소에서만 한다(API 토큰이 이 저장소 `.env`에만 있다). 이 저장소에서 대상 저장소의 Pages 배포를 요청받으면 `skills/deploy-cloudflare-pages/SKILL.md`를 따르고, 다른 프로젝트 폴더에서 온 요청은 이 저장소에서 다시 하도록 안내한다. 기준의 정본은 `docs/cloudflare-pages.md`이며 이 내용은 이 저장소에만 두고 `baseline/`·`global/`·대상 저장소 문서로 복사하지 않는다.
 - `skills/<name>/SKILL.md`: 오픈 표준 스킬. 폴더명 = `name`(영문 kebab-case), `description`은 한영 키워드 병기, 본문은 한국어. 스킬은 이 컴퓨터에 저장소가 있다고 가정하지 않고, 플러그인 경로(`CLAUDE_PLUGIN_ROOT`) 또는 원격 저장소를 임시 폴더로 받아 쓴다(`ysm-locate` 블록, 스킬마다 동일해야 한다).
 - `baseline/`: 프로젝트로 **복사**되는 저장소 규칙의 정본. `files/`는 그대로 복사, `agents-block.md`는 AGENTS.md의 마커 구역에 삽입. 프로젝트에는 기반 버전이 커밋되지 않는 `.env.baseline`에만 기록된다.

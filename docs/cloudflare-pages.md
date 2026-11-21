@@ -1,6 +1,6 @@
 # Cloudflare Pages 배포 기준
 
-이 문서는 Cloudflare Pages 배포의 정본이다. 대상 저장소에는 복사하지 않고, 배포할 때마다 이 저장소에서 읽는다. 절차는 [deploy-cloudflare-pages 스킬](../skills/deploy-cloudflare-pages/SKILL.md)이 따른다. 계정 ID·루트 도메인·프로젝트 이름은 여기에 적지 않고 실행할 때 확인하거나 사용자에게 묻는다.
+이 문서는 Cloudflare Pages 배포의 정본이다. 대상 저장소에는 복사하지 않고, 배포할 때마다 이 저장소에서 읽는다. 절차는 [deploy-cloudflare-pages 스킬](../skills/deploy-cloudflare-pages/SKILL.md)이 따른다. 계정 ID·루트 도메인·프로젝트 이름은 여기에 적지 않고 실행할 때 확인하거나 사용자에게 묻는다. 토큰은 사용자가 자기 Cloudflare 계정에서 발급해 이 저장소를 연 폴더에 둔다는 전제로 쓰였고, Cloudflare는 새 프로젝트에 Workers를 권장하지만 이 표준은 Pages(Git 연동)를 쓴다.
 
 ## 표준
 
@@ -19,7 +19,7 @@
 
 - **패키지 매니저**: 기본은 npm이다. 패키지가 여러 개인 워크스페이스만 pnpm 등을 허용한다. pnpm 워크스페이스에서 검증한 구성은 루트 디렉터리를 앱 폴더(예: `apps/web`), 빌드 명령을 `pnpm --dir ../.. install --frozen-lockfile && pnpm build`, 출력을 `dist`로 두는 것이다.
 - **Pages Functions**: `functions/` 폴더는 루트 디렉터리 기준 위치에서만 인식된다. Worker 코드를 옮길 때는 `_worker.js`(고급 모드)와 `_routes.json`(Worker가 처리할 경로만 `include`)을 출력 폴더에 넣고, `wrangler.jsonc`에는 `pages_build_output_dir`을 둔다.
-- **`_redirects`**: 상태 코드는 200·301·302·303·307·308만 유효하다(`404`는 무시된다).
+- **`_redirects`**: 상태 코드는 200·301·302·303·307·308만 유효하다(`404`는 무시된다). Pages Functions가 처리하는 요청에는 `_redirects`가 적용되지 않는다.
 
 ## 토큰
 
@@ -66,7 +66,8 @@ P=<프로젝트>
 - 도메인을 Worker에서 Pages로 옮길 때는 Worker 쪽 연결을 풀어야 Worker가 만든 읽기 전용 DNS 레코드가 사라지고 CNAME을 만들 수 있다. 전환 중 잠깐 끊긴다. 로컬 DNS 캐시 때문에 몇 분간 이 컴퓨터에서만 안 열릴 수 있으며 `dig @1.1.1.1`로 확인한다.
 - 커스텀 도메인 DNS의 루트 영역에 메일 등 다른 레코드가 있으면 건드리지 않는다.
 - 프로젝트 목록 조회에 `per_page`를 붙이지 않는다(50은 거절된다). 한 페이지는 10개이므로 `result_info.total_pages`를 읽는다.
-- `<프로젝트>.pages.dev`는 개발이 아니라 프로덕션(`main`)과 같은 내용이다. 개발은 `develop.<프로젝트>.pages.dev`다. 이름이 이미 쓰이면 `wakeup-1tj`처럼 접미사가 붙으므로 실제 주소는 프로젝트의 `subdomain` 필드로 확인한다.
+- `<프로젝트>.pages.dev`는 개발이 아니라 프로덕션(`main`)과 같은 내용이다. 개발은 `develop.<프로젝트>.pages.dev`다. 이름이 이미 쓰이면 `my-app-sample-1tj`처럼 접미사가 붙으므로 실제 주소는 프로젝트의 `subdomain` 필드로 확인한다.
+- 미리보기 배포는 같은 저장소의 브랜치·PR에서만 만들어지고 포크 PR에는 만들어지지 않는다.
 - 빌드 명령에 `npm ci`를 붙이지 않는다. Pages가 빌드 전에 `npm clean-install`을 자동 실행한다.
 - 저장소와 GitHub 앱 권한이 정상인데 클론 단계가 `Repository not found`로 실패하면 같은 브랜치를 재배포한다. 재배포로 풀리는 경우가 있다.
 
