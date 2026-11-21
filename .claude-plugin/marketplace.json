@@ -7,7 +7,7 @@
     {
       "name": "ysm",
       "source": "./",
-      "description": "Project baseline, global instructions, and new-project / adopt-project / sync-project / setup-machine / audit-docs / tidy-code / audit-messages / release-project / deploy-cloudflare-pages skills"
+      "description": "Project baseline, global instructions, and new-project / adopt-project / sync-project / setup-machine / audit-docs / tidy-code / audit-messages / share-lesson / release-project / deploy-cloudflare-pages skills"
     }
   ],
   "description": "ysm project baseline and skills for Claude Code and Codex"
