@@ -1,68 +1,102 @@
 # ysm-skills
 
-> 개인 작업 방식을 담은 저장소다. 그대로 쓰기보다 구조와 규칙을 참고해 자기 기준으로 고쳐 쓰는 것을 권한다. 규칙은 한국어로 쓰여 있고, 소유자 계정(`yimsemin`)이 스킬 안의 저장소 주소에 들어 있으니 포크하면 바꾼다.
+> 여러 프로젝트에서 일관된 관리 기준을 적용하기 위한 스킬과 `AGENTS.md` 베이스라인
 
-에이전트(Claude Code, Codex)로 새 프로젝트를 시작하고 여러 컴퓨터에서 같은 기준으로 일하기 위한 스킬과 베이스라인. 이 컴퓨터에 폴더가 없어도 원격 저장소(`yimsemin/ysm-skills`)만 있으면 동작한다.
+에이전트(Claude Code, Codex)에게 "이 저장소를 참고해서 ~해줘"라고 요청하거나, 플러그인으로 사용할 수 있습니다.
 
-## 처음 한 번 (컴퓨터마다)
-
-1. (GitHub 저장소 생성·설정 점검을 맡기려면) `gh auth login`으로 GitHub에 로그인한다. 이 저장소를 읽는 데는 로그인이 필요 없다.
-2. (선택) Claude Code 플러그인을 설치하면 `/ysm:new-project` 같은 명령을 쓸 수 있다. 설치하지 않아도 아래 프롬프트의 링크만으로 시작된다.
-   ```
-   /plugin marketplace add yimsemin/ysm-skills
-   /plugin install ysm@ysm-skills
-   ```
-
-## 새 프로젝트 시작하기
-
-1. 새 폴더를 만들고(예: `~/Documents/stitch-counter`) 그 폴더에서 에이전트(Claude Code, Codex)를 연다.
-2. 만들 것을 자유롭게 쓰고, 마지막 줄에 저장소 링크를 붙인다.
-
+## 대표 사용 예시
+### 새 프로젝트 시작하기
 ```
-뜨개질할 때 현재 행 수를 크게 보여주고 누르면 올라가는 모바일 카운터 앱을 만들고 싶어.
-스택은 추천해줘. 로그인이나 서버는 필요 없어.
+~를 만들거야
 
-https://github.com/yimsemin/ysm-skills 참조해서 기본 셋팅해줘
+yimsemin/ysm-skills 저장소를 보고 기본 셋팅해줘
 ```
 
-에이전트가 이 저장소의 [new-project 스킬](skills/new-project/SKILL.md)을 따라 전역 지침 점검(없거나 낡았으면 물어본 뒤 갱신), 질문, 베이스라인 적용, `AGENTS.md` 작성을 한다. 첫 커밋과 GitHub 저장소 생성은 요청할 때 한다. 플러그인을 설치했다면 `/ysm:new-project 만들 것…`으로 시작해도 같다.
-
-에이전트는 링크의 저장소를 임시 폴더로 받아(`gh` 또는 `git clone`) 읽는다.
-
-## Cloudflare Pages 배포하기
-
-Cloudflare 배포와 관리는 **이 저장소 폴더에서만** 한다. 기준은 [docs/cloudflare-pages.md](docs/cloudflare-pages.md)에만 있고 대상 프로젝트로 복사되지 않는다. Cloudflare API 토큰은 이 저장소 폴더의 `.env`(git에서 제외됨) 또는 환경변수에 둔다. 컴퓨터마다 한 번 발급하며 만드는 법과 권한은 그 문서의 "토큰"에 있다.
-
-이 저장소 폴더에서 에이전트를 열고:
-
+### 문서 / 코드 / 테스트 점검
 ```
-yimsemin/<대상 저장소>를 Cloudflare Pages 배포해줘
+yimsemin/ysm-skills 저장소를 보고 문서 최적화 해줘
 ```
 
-에이전트가 [deploy-cloudflare-pages 스킬](skills/deploy-cloudflare-pages/SKILL.md)을 따라 현재 설정을 조회하고, 표준과의 차이와 계획을 보여 준 뒤 승인받은 항목만 실행한다. 이미 배포된 프로젝트를 점검할 때도 같은 요청을 쓴다.
+```
+yimsemin/ysm-skills 저장소를 보고 코드 최적화 해줘
+```
+
+```
+yimsemin/ysm-skills 저장소를 보고 테스트 최적화 해줘
+```
+
+### Cloudflare Pages 배포
+
+이 저장소를 받은 폴더에서 에이전트를 열고 요청한다(본인 Cloudflare API 토큰이 필요하다. 아래 스킬 표 참고).
+
+```
+<소유자>/<대상 저장소>를 Cloudflare Pages로 배포해줘
+```
+
 
 ## 스킬
 
-| 스킬 | 용도 | 상태 |
+| 스킬 | 용도 |
+|---|---|
+| `new-project` | 빈 폴더에서 의도부터 시작해 베이스라인 적용 |
+| `setup-machine` | 이 컴퓨터의 전역 지침·설정 점검과 갱신(승인 후) |
+| `deploy-cloudflare-pages` | 프로젝트의 Cloudflare Pages 배포를 표준에 맞춰 만들거나 점검(API, 승인 후). 이 저장소 폴더에서만 쓰며 본인 Cloudflare API 토큰이 필요하다. 기준은 [docs/cloudflare-pages.md](docs/cloudflare-pages.md) |
+| `adopt-project` | 기존·인수 프로젝트를 수정 없이 진단한 뒤 승인받아 맞춤(트레일러 차단, 이력 정리 포함) |
+| `sync-project` | 이미 적용한 프로젝트를 최신 베이스라인에 맞춤(변경 내용 보고, 승인 후 갱신) |
+| `audit-docs` | 문서의 낡은 내용·모순·중복·사족 점검 |
+| `tidy-code` | 동작을 바꾸지 않고 미사용 코드·CSS 삭제, 중복·구조 정리, 테스트 축소 |
+| `audit-messages` | 사용자·에이전트 문구의 오류·모순·용어 흐트러짐 점검, 오류 종류 코드·카탈로그 구조 개선 |
+| `release-project` | 릴리즈 요청 시 버전·CHANGELOG·검증·병합·태그·브랜치 정리까지 전체 절차 |
+
+스킬은 요청이 설명과 맞으면 에이전트가 고른다. 예: "문서 점검해줘", "코드 정리해줘", "문구 점검해줘", "릴리즈 진행해줘", "이 프로젝트에 ysm 규칙 적용해줘".
+
+
+## 규칙
+
+규칙은 세 곳에 나뉘어 놓이고, 적용 방식이 서로 다르다.
+
+| 구분 | 놓이는 곳 | 정본 |
 |---|---|---|
-| `new-project` | 빈 폴더에서 의도부터 시작해 베이스라인 적용 | 사용 가능 |
-| `setup-machine` | 이 컴퓨터의 전역 지침·설정 점검과 갱신(승인 후) | 사용 가능 |
-| `deploy-cloudflare-pages` | 프로젝트의 Cloudflare Pages 배포를 표준에 맞춰 만들거나 점검(API, 승인 후) | 사용 가능 |
-| `adopt-project` | 기존·인수 프로젝트를 수정 없이 진단한 뒤 승인받아 맞춤(트레일러 차단, 이력 정리 포함) | 사용 가능 |
-| `sync-project` | 이미 적용한 프로젝트를 최신 베이스라인에 맞춤(변경 내용 보고, 승인 후 갱신) | 사용 가능 |
-| `audit-docs` | 문서의 낡은 내용·모순·중복·사족 점검 | 사용 가능 |
-| `tidy-code` | 동작을 바꾸지 않고 미사용 코드·CSS 삭제, 중복·구조 정리, 테스트 축소 | 사용 가능 |
-| `audit-messages` | 사용자·에이전트 문구의 오류·모순·용어 흐트러짐 점검, 오류 종류 코드·카탈로그 구조 개선 | 사용 가능 |
-| `release-project` | 릴리즈 요청 시 버전·CHANGELOG·검증·병합·태그·브랜치 정리까지 전체 절차 | 사용 가능 |
-| `handoff` | 다음 대화방에 붙여 넣을 짧은 인계 프롬프트 작성 | 예정 |
-| `review-journey` | 처음 보는 사용자 기준 전면 재점검 | 예정 |
+| 베이스라인 | 프로젝트의 `AGENTS.md`(`ysm-baseline` 마커 구역)와 훅·설정 파일 | [baseline/agents-block.md](baseline/agents-block.md), `baseline/files/` |
+| 전역 지침 | `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`(`ysm-global` 마커 구역), `~/.claude/settings.json`의 확인 규칙 | [global/agents.md](global/agents.md) |
+| 대화용 지침 | claude.ai·ChatGPT 계정 설정(직접 붙여넣기) | [global/chat-claude.md](global/chat-claude.md), [global/chat-chatgpt.md](global/chat-chatgpt.md) |
 
-스킬은 요청이 설명과 맞으면 에이전트가 고르고, 플러그인을 설치했다면 `/ysm:audit-docs`처럼 이름으로 직접 부를 수 있다. 예: "문서 점검해줘", "코드 정리해줘", "문구 점검해줘", "릴리즈 진행해줘", "이 프로젝트에 ysm 규칙 적용해줘".
+베이스라인은 저장소 구조에 따르는 Git·문서·의존성·안전 규칙이고, 전역 지침은 저장소 없이도 성립하는 소통·판단·검증 규칙이다. 같은 규칙을 양쪽에 두지 않는다.
 
-## 규칙이 놓이는 곳
+```
+yimsemin/ysm-skills 저장소를 보고 이 프로젝트에 베이스라인 적용해줘      (처음 적용하는 기존 프로젝트)
+yimsemin/ysm-skills 저장소를 보고 베이스라인 업데이트 해줘               (이미 적용한 프로젝트)
+yimsemin/ysm-skills 저장소를 보고 전역 지침 업데이트 해줘                (이 컴퓨터)
+```
 
-- 전역 지침: 소통·판단·검증처럼 저장소와 무관한 에이전트 작업 규칙. 정본은 [global/agents.md](global/agents.md)이고 `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`의 마커 구역에 똑같이 들어간다.
-- 대화용 지침: claude.ai 대화에만 적용되는 짧은 지침. [global/chat.md](global/chat.md)를 계정 설정에 직접 붙여넣는다. 변경 이력은 git 이력이다.
-- 베이스라인: 저장소 구조에 따르는 Git·문서·의존성·안전 규칙. 정본은 [baseline/agents-block.md](baseline/agents-block.md)이고 훅·설정 파일은 `baseline/files/`에 있다. `baseline/apply.sh`가 기존 파일을 덮어쓰지 않고 적용한다. Dependabot 표준 설정은 프로젝트마다 패키지 관리자가 달라 자동 복사하지 않고 [baseline/dependabot.yml](baseline/dependabot.yml)을 복사해 쓴다.
+### 기존 규칙을 덮어쓰는가
 
-라이선스는 [MIT](LICENSE)다. 참고한 외부 자료는 [docs/references.md](docs/references.md). 이 저장소를 고칠 때는 [AGENTS.md](AGENTS.md)를 따른다.
+둘 다 **마커 구역만** 만들거나 교체한다. 마커(`<!-- ysm-baseline:start -->` 등) 밖에 쓴 내용은 건드리지 않는다.
+
+- 베이스라인: 없는 파일은 새로 만들고, 이미 있는 파일은 덮어쓰지 않는다. 내용이 다르면 "다름"으로 알리고 에이전트가 읽어서 병합한다(`.gitignore`만 빠진 줄을 추가한다). 사용자에게 보고하고 승인받은 항목만 바꾼다.
+- 전역 지침: 승인한 뒤에만 쓰고, 쓰기 전에 기존 파일을 `.bak-시각`으로 백업한다. `settings.json`은 필요한 확인 규칙만 추가하고 기존 설정은 그대로 둔다. 마커가 없는 기존 파일에는 구역을 맨 위에 추가한다.
+- 강제되는 것: 베이스라인의 훅(커밋 메시지 형식, 비밀값 검사)은 설치되면 커밋을 실제로 막는다. 나머지 규칙은 에이전트가 따르는 지침이다.
+
+### 규칙이 충돌하면
+
+- 베이스라인과 프로젝트 고유 규칙: 베이스라인을 따르는 것이 기본이다. 프로젝트 규칙에 유지할 만한 특별한 이점이 있으면 프로젝트 규칙을 남기고, 이점이 분명하지 않으면 사용자에게 묻는다. 적용 때 겹치거나 모순되는 문장이 있으면 에이전트가 목록으로 보고한다.
+- 전역 지침과 프로젝트 규칙: 겹치지 않게 나눠 두었고, 우선순위를 따로 정하지 않았다. 부딪히면 사용자에게 묻는 것이 기본이다.
+
+### 붙여 넣은 규칙을 수정하면
+
+- **마커 구역 안**을 고치면 다음 업데이트 때 정본 내용으로 교체되어 사라진다. 베이스라인은 교체 전에 구역 안을 직접 고친 부분을 표시하고, 마커 밖으로 옮길지 묻는다. 전역 지침은 적용 전에 `--diff`로 바뀔 내용을 볼 수 있다.
+- **마커 구역 밖**에 쓴 개인·프로젝트 규칙은 업데이트해도 그대로 남는다. 고치고 싶은 규칙은 구역 밖에 쓰거나 이 저장소를 포크해 정본을 고쳐 쓴다.
+- 대화용 지침은 자동 갱신이 없다. 바뀌면 다시 붙여넣는다.
+- 업데이트는 요청할 때만 하고 승인 후에 적용한다.
+
+## 고급: Claude Code 플러그인
+
+플러그인을 설치하면 `/ysm:new-project 만들 것…`, `/ysm:audit-docs`처럼 스킬 이름으로 직접 부를 수 있다. 설치하지 않아도 위 방식으로 모두 동작한다.
+
+```
+/plugin marketplace add yimsemin/ysm-skills
+/plugin install ysm@ysm-skills
+```
+
+## 라이선스
+[MIT](LICENSE)
