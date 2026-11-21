@@ -1,10 +1,12 @@
 # ysm-skills
 
+> 개인 작업 방식을 담은 저장소다. 그대로 쓰기보다 구조와 규칙을 참고해 자기 기준으로 고쳐 쓰는 것을 권한다. 규칙은 한국어로 쓰여 있고, 소유자 계정(`yimsemin`)이 스킬 안의 저장소 주소에 들어 있으니 포크하면 바꾼다.
+
 에이전트(Claude Code, Codex)로 새 프로젝트를 시작하고 여러 컴퓨터에서 같은 기준으로 일하기 위한 스킬과 베이스라인. 이 컴퓨터에 폴더가 없어도 원격 저장소(`yimsemin/ysm-skills`)만 있으면 동작한다.
 
 ## 처음 한 번 (컴퓨터마다)
 
-1. `gh auth login`으로 GitHub에 로그인한다. 저장소가 private인 동안은 저장소 접근 권한이 있는 계정이어야 한다.
+1. (GitHub 저장소 생성·설정 점검을 맡기려면) `gh auth login`으로 GitHub에 로그인한다. 이 저장소를 읽는 데는 로그인이 필요 없다.
 2. (선택) Claude Code 플러그인을 설치하면 `/ysm:new-project` 같은 명령을 쓸 수 있다. 설치하지 않아도 아래 프롬프트의 링크만으로 시작된다.
    ```
    /plugin marketplace add yimsemin/ysm-skills
@@ -25,7 +27,7 @@ https://github.com/yimsemin/ysm-skills 참조해서 기본 셋팅해줘
 
 에이전트가 이 저장소의 [new-project 스킬](skills/new-project/SKILL.md)을 따라 전역 지침 점검(없거나 낡았으면 물어본 뒤 갱신), 질문, 베이스라인 적용, `AGENTS.md` 작성을 한다. 첫 커밋과 GitHub 저장소 생성은 요청할 때 한다. 플러그인을 설치했다면 `/ysm:new-project 만들 것…`으로 시작해도 같다.
 
-private인 동안 링크는 웹으로 열리지 않으므로 에이전트가 `gh`로 받아 읽는다(위 "처음 한 번" 1번이 필요한 이유).
+에이전트는 링크의 저장소를 임시 폴더로 받아(`gh` 또는 `git clone`) 읽는다.
 
 ## Cloudflare Pages 배포하기
 
@@ -63,4 +65,4 @@ yimsemin/<대상 저장소>를 Cloudflare Pages 배포해줘
 - 대화용 지침: claude.ai 대화에만 적용되는 짧은 지침. [global/chat.md](global/chat.md)를 계정 설정에 직접 붙여넣는다. 변경 이력은 git 이력이다.
 - 베이스라인: 저장소 구조에 따르는 Git·문서·의존성·안전 규칙. 정본은 [baseline/agents-block.md](baseline/agents-block.md)이고 훅·설정 파일은 `baseline/files/`에 있다. `baseline/apply.sh`가 기존 파일을 덮어쓰지 않고 적용한다. Dependabot 표준 설정은 프로젝트마다 패키지 관리자가 달라 자동 복사하지 않고 [baseline/dependabot.yml](baseline/dependabot.yml)을 복사해 쓴다.
 
-참고한 외부 자료는 [docs/references.md](docs/references.md). 이 저장소를 고칠 때는 [AGENTS.md](AGENTS.md)를 따른다.
+라이선스는 [MIT](LICENSE)다. 참고한 외부 자료는 [docs/references.md](docs/references.md). 이 저장소를 고칠 때는 [AGENTS.md](AGENTS.md)를 따른다.
