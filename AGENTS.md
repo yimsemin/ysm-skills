@@ -85,6 +85,7 @@ UI·CLI·오류 안내처럼 사용자나 에이전트에게 보이는 문구가
 - 커밋은 의미·작업 단위 하나씩 만든다. 같은 목적의 후속 수정(오타·누락·리뷰 반영)은 새 커밋으로 쌓지 말고 푸시 전에 amend·fixup으로 합쳐 원격 이력을 깔끔하게 유지한다.
 - `develop`은 아래 순서로 판단한다. 1) Cloudflare Pages로 배포하면 둔다. 2) 사용자가 요청하면 둔다. 3) 그 외에는 두지 않고 `main`만 쓴다. 버전·릴리스 여부는 기준이 아니다. `develop`을 두면 이유를 프로젝트 구역에 한 줄 쓰고, 작업 브랜치는 `develop`에서 따서 `develop`으로 PR하며(미리보기), `main`은 릴리스 PR(`develop` → `main`)로만 갱신한다(정식).
 - 병합 방식: `develop`이 없으면 squash만 쓴다. 있으면 작업 브랜치 → `develop`은 squash, `develop` → `main` 릴리스는 merge commit이다. rebase 병합은 쓰지 않는다. squash 커밋의 메시지는 PR 제목과 본문이다. 병합 요청은 릴리스를 뜻하지 않는다.
+- 릴리스 병합 커밋 때문에 `develop`이 `main`보다 뒤처져 보여도 맞추지 않는다. `main`→`develop` 동기화 PR은 병합 커밋을 다시 만들어 뒤처짐이 반복되므로 만들지 않는다. `main`에 `develop`을 거치지 않은 커밋이 생긴 경우에만 그 PR로 되병합한다.
 - 병합과 릴리스는 별개다. 병합할 때마다 CHANGELOG의 `[Unreleased]`에 쌓아 두고, 버전은 사용자가 올리라고 지시한 시점에만 올린다. 릴리스 한 번에 매니페스트 버전·CHANGELOG·annotated 태그 `vX.Y.Z`·GitHub Release를 함께 만든다(스킬 `release-project`). 버전을 쓰지 않는 프로젝트에는 태그·CHANGELOG·Release를 두지 않는다.
 - GitHub 기본 브랜치는 항상 `main`이다. `develop`을 쓰는 프로젝트도 `develop`은 기본 브랜치로 두지 않는다. Dependabot 설정은 기본 브랜치에 있어야 적용되므로 `develop`에서 바꾼 설정은 릴리스 뒤에 적용된다.
 - 커밋 제목은 `<type>(<선택 scope>): <요약>`이다. type은 `feat` `fix` `perf` `refactor` `docs` `test` `build` `ci` `chore` `style` `revert`, 72자 이내, 끝에 마침표 없음. 형식과 언어는 `.githooks/commit-msg`가 검사한다. 이유가 필요하면 본문에 쓴다.
