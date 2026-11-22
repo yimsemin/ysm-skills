@@ -78,7 +78,7 @@ UI·CLI·오류 안내처럼 사용자나 에이전트에게 보이는 문구가
 
 - stage·commit·push·PR·merge는 사용자가 요청할 때만 한다. 승인은 그 요청에만 유효하고 다음 작업으로 이어지지 않는다. 이 파일의 프로젝트 구역이 명시한 상시 승인만 예외다.
 - Git 규칙은 프로젝트 규칙이 대체하지 못한다. 프로젝트가 바꿀 수 있는 것은 이 구역이 "선언"이라고 적은 항목뿐이고, 프로젝트 구역에 한 줄씩 쓴다.
-- 보호 브랜치는 `main`과 있으면 `develop`이다. 여기에는 직접 커밋·푸시하지 않고, 작업 브랜치(`feat/` `fix/` `docs/` `chore/` + kebab-case)에서 PR로 병합한다. 첫 커밋만 `main`에 직접 한다. 병렬 작업은 브랜치마다 `git worktree`로 분리한다. `.githooks/pre-commit`·`pre-push`가 막고, `baseline/repo-settings.sh`가 GitHub의 병합 방식과 브랜치 보호를 맞춘다(비공개 저장소는 무료 플랜이라 훅만 작동한다).
+- 보호 브랜치는 `main`과 있으면 `develop`이다. 여기에는 직접 커밋·푸시하지 않고, 작업 브랜치(`feat/` `fix/` `docs/` `chore/` + kebab-case)에서 PR로 병합한다. 첫 커밋만 `main`에 직접 한다. 병렬 작업은 브랜치마다 `git worktree`로 분리한다. `.githooks/pre-commit`·`pre-push`가 막고(프로젝트 전용 푸시 검사는 훅을 고치지 말고 `.githooks/pre-push.local`에 둔다), `baseline/repo-settings.sh`가 GitHub의 병합 방식과 브랜치 보호를 맞춘다(비공개 저장소는 무료 플랜이라 훅만 작동한다).
 - 선언 `main` 직행: 프로젝트 구역에 `<!-- ysm:direct-main -->` 줄을 쓰고 이유를 옆에 적으면 `main`에 직접 커밋·푸시할 수 있다. `develop`과 force push·삭제는 그대로 막힌다.
 - 선언 커밋 제목 언어: 모든 프로젝트가 프로젝트 구역에 `<!-- ysm:commit-lang=ko -->` 또는 `<!-- ysm:commit-lang=en -->` 줄을 쓰고, `.githooks/commit-msg`가 검사한다.
 - force push, 푸시한 이력의 수정, 브랜치·태그 강제 삭제, 공유 브랜치의 `reset --hard`는 사용자가 그 대화에서 직접 요청했을 때만 한다. 보호 브랜치와 태그에는 `YSM_ALLOW_FORCE=1`을 붙여야 훅을 통과한다. 이미 푸시한 작업 브랜치의 재작성은 `--force-with-lease`로만 한다. 푸시 전 로컬 커밋의 amend·fixup 정리는 이력 재작성이 아니다. `--no-verify`로 훅을 우회하지 않는다.

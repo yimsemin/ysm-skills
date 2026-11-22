@@ -5,6 +5,7 @@
 #   병합 방식  squash 허용(커밋 메시지는 PR 제목+본문), rebase 금지, merge commit은 develop이 있을 때만 허용
 #   보호 브랜치  main(있으면 develop): PR 필수, 관리자 포함, force push·삭제 금지
 #               AGENTS.md에 `<!-- ysm:direct-main -->`가 있으면 main의 PR 필수는 빼고 나머지는 같다
+#               이미 걸려 있는 필수 상태 확인(required_status_checks)은 그대로 보존한다
 #   브랜치 자동 삭제  끔
 # 출력(한 줄에 하나): SAME|DIFFERS|SET|INFO <항목>
 #   비공개 저장소의 무료 플랜은 브랜치 보호를 걸 수 없다(INFO). 그 경우 로컬 훅만 작동한다.
@@ -66,8 +67,10 @@ for b in $branches; do
     echo "DIFFERS $b 보호: 현재 [$(printf '%s' "$cur" | tr '\t' ' ')] 목표 [enforce_admins force_push deletions pr_required = $(printf '%s' "$want" | tr '\t' ' ')]"
     if [ "$apply" = 1 ]; then
       if [ "$need_pr" = true ]; then pr='{"required_approving_review_count":0}'; else pr='null'; fi
+      sc="$(gh api "repos/$repo/branches/$b/protection" --jq 'if .required_status_checks then {strict: .required_status_checks.strict, contexts: .required_status_checks.contexts} else null end' 2>/dev/null | tr -d '\n')"
+      [ -n "$sc" ] || sc=null
       gh api -X PUT "repos/$repo/branches/$b/protection" --input - >/dev/null <<EOF
-{"required_status_checks":null,"enforce_admins":true,"required_pull_request_reviews":$pr,"restrictions":null,"allow_force_pushes":false,"allow_deletions":false}
+{"required_status_checks":$sc,"enforce_admins":true,"required_pull_request_reviews":$pr,"restrictions":null,"allow_force_pushes":false,"allow_deletions":false}
 EOF
       echo "SET $b 보호"
     fi
