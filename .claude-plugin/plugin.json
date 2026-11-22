@@ -1,7 +1,7 @@
 {
   "name": "ysm",
   "description": "ysm project baseline and skills for Claude Code and Codex",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "author": {
     "name": "YSM"
   }

@@ -22,12 +22,11 @@ fi
 
 셸 변수는 명령 호출 사이에 유지되지 않는다. 위 블록과 `$src`를 쓰는 명령은 한 번의 실행으로 묶거나, 출력한 경로를 이후 명령에 직접 적는다.
 
-적용 이력을 확인한다. `AGENTS.md`에 `ysm-baseline:start` 마커가 없으면 이 스킬 대상이 아니므로 `adopt-project`로 안내하고 멈춘다. `.env.baseline`은 커밋되지 않으므로 새 클론에서는 없을 수 있다. 없으면 기록된 버전을 알 수 없다고 보고하고 마커 구역의 차이로만 판단한다.
+적용 이력을 확인한다. `AGENTS.md`에 `ysm-baseline:start` 마커가 없으면 이 스킬 대상이 아니므로 `adopt-project`로 안내하고 멈춘다.
 
 ## 2. 차이 진단 (읽기 전용)
 
-- **버전**: 프로젝트의 `.env.baseline`(`ysm-baseline=`)과 `$src/baseline/VERSION`을 비교한다. 같고 차이 목록도 비어 있으면 "이미 최신"이라고 보고하고 끝낸다.
-- **변경 목록**: `sh "$src/baseline/apply.sh" --dry-run .`의 CREATED·DIFFERS·UPDATED·APPENDED를 본다. SAME은 건너뛴다.
+- **변경 목록**: `sh "$src/baseline/apply.sh" --dry-run .`의 CREATED·DIFFERS·UPDATED·APPENDED를 본다. SAME은 건너뛴다. 이 목록과 아래 차이가 모두 비어 있으면 "이미 최신"이라고 보고하고 끝낸다.
 - **규칙 변경 내용**: 프로젝트 `AGENTS.md`의 마커 구역과 `$src/baseline/agents-block.md`를 `diff`로 비교해 추가·삭제·수정된 규칙을 문장 단위로 요약한다. 마커 구역은 통째로 교체되므로 프로젝트가 마커 안을 직접 고친 부분이 있으면 따로 표시한다. 그 내용은 교체 전에 마커 밖 프로젝트 구역으로 옮길지 정해야 한다.
 - **프로젝트 구역과의 충돌**: 새 규칙과 겹치거나 모순되는 마커 밖 문장.
 - **Dependabot**: `$src/baseline/dependabot.yml` 표준이 바뀌었으면 `.github/dependabot.yml`과 차이를 본다. 설정이 없는 보관 저장소는 제외한다.
@@ -48,6 +47,6 @@ fi
 
 ## 5. 검증하고 보고한다
 
-- `sh "$src/baseline/apply.sh" --dry-run .`가 SAME만 보이는지, `.env.baseline`이 현재 버전인지, `git config core.hooksPath`가 `.githooks`인지 확인한다.
+- `sh "$src/baseline/apply.sh" --dry-run .`가 SAME만 보이는지, `git config core.hooksPath`가 `.githooks`인지 확인한다.
 - 프로젝트의 테스트·빌드 명령을 새로 실행해 반영 때문에 깨지지 않았는지 본다.
 - 보고는 "한 일 / 확인하지 못한 것 / 하지 않은 것"으로 나눈다. 새 규칙이 요구하지만 하지 않은 후속 작업(예: 기존 문구 점검)은 목록으로 남긴다. 커밋·푸시는 사용자가 요청할 때 한다.

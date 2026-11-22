@@ -19,7 +19,6 @@ target="${1:-}"
 
 here="$(cd "$(dirname "$0")" && pwd)"
 target="$(cd "$target" && pwd)"
-version="$(tr -d '[:space:]' < "$here/VERSION")"
 
 if [ ! -d "$target/.git" ]; then
   echo "INFO git init (main)"
@@ -88,11 +87,10 @@ else
   fi
 fi
 
-# 3) 훅 활성화와 기반 버전 기록(.env.baseline은 .gitignore의 .env.*에 걸려 커밋되지 않는다)
+# 3) 훅 활성화
 if [ "$dry" = 0 ]; then
   [ -d "$target/.githooks" ] && chmod +x "$target"/.githooks/* 2>/dev/null || true
   git -C "$target" config core.hooksPath .githooks
-  printf 'ysm-baseline=%s\n' "$version" > "$target/.env.baseline"
 fi
 if [ "$noreply" = 1 ]; then
   login="$(gh api user -q .login 2>/dev/null || true)"
@@ -107,4 +105,4 @@ if [ "$noreply" = 1 ]; then
     echo "INFO noreply-email SKIPPED: gh 로그인(gh auth login) 후 다시 실행한다"
   fi
 fi
-echo "INFO hooksPath=.githooks based-on=$version (.env.baseline)"
+echo "INFO hooksPath=.githooks"
