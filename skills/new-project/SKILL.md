@@ -52,7 +52,7 @@ sh "$src/baseline/apply.sh" --noreply-email .
 
 ## 4. 프로젝트 내용을 채운다
 
-- `AGENTS.md`의 `{{INTENT}}`, `{{USERS}}`, `{{SUCCESS}}`, `{{NON_GOALS}}`에 1단계 내용을 쓴다. `{{RUN_AND_VERIFY}}`는 실제 명령이 정해진 만큼만 쓰고, 아직 없으면 "아직 없음"이라고 쓴다. 지어내지 않는다.
+- `AGENTS.md`의 `{{INTENT}}`, `{{USERS}}`, `{{SUCCESS}}`, `{{NON_GOALS}}`에 1단계 내용을 쓴다. `{{COMMIT_LANG}}`에 커밋 제목 언어 `ko` 또는 `en`을 쓴다(사용자의 언어에 맞추고, 애매하면 묻는다). `develop`은 Cloudflare Pages로 배포하거나 사용자가 요청한 경우에만 두고, 그렇지 않으면 만들지 않는다. `{{RUN_AND_VERIFY}}`는 실제 명령이 정해진 만큼만 쓰고, 아직 없으면 "아직 없음"이라고 쓴다. 지어내지 않는다.
 - `ysm-baseline` 마커 사이는 수정하지 않는다.
 - 폴더에 있던 기획·인수인계 같은 입력 문서는 `docs/`로 옮기고 `AGENTS.md`에서는 현재 결정만 요약해 링크한다.
 - `README.md`가 없으면 의도 한 단락과 실행 방법만 담은 짧은 README를 만든다.
@@ -61,24 +61,20 @@ sh "$src/baseline/apply.sh" --noreply-email .
 ## 5. 검증하고 보고한다
 
 - `git config core.hooksPath`가 `.githooks`이고 `git config user.email`이 noreply인지 확인한다.
-- 이 폴더의 GitHub 원격 저장소가 있고 admin 권한이면, "Automatically delete head branches" 설정을 점검하고 켜져 있으면 끈다(`develop` 같은 장기 브랜치가 릴리스 PR 병합 때 지워지는 것을 막기 위함이며, 작업 브랜치 정리는 규칙에 따라 에이전트가 한다). 권한이 없으면 끄지 못했다고 보고한다. 저장소가 아직 없으면 사용자가 생성을 요청할 때 함께 확인한다.
+- 이 폴더의 GitHub 원격 저장소가 있고 admin 권한이면, `sh "$src/baseline/repo-settings.sh" <소유자/저장소>`로 병합 방식·브랜치 자동 삭제·브랜치 보호를 점검하고 승인받아 `--apply`로 맞춘다(자동 삭제는 `develop` 같은 장기 브랜치가 릴리스 PR 병합 때 지워지는 것을 막으려고 끈다. 작업 브랜치 정리는 규칙에 따라 에이전트가 한다). 권한이 없으면 맞추지 못했다고 보고한다. 저장소가 아직 없으면 사용자가 생성을 요청할 때 함께 확인한다.
 
   기본 브랜치는 `main`으로 둔다(`defaultBranchRef`로 확인).
 
   ```sh
-  gh repo view --json deleteBranchOnMerge,viewerPermission,defaultBranchRef
-  gh api -X PATCH repos/{owner}/{repo} -F delete_branch_on_merge=false
+  gh repo view --json viewerPermission,defaultBranchRef
   ```
 
-- 원격 저장소가 **public**이고 admin 권한이면 외부 기여 방어 설정을 점검해 맞춘다. private이면 건너뛰고(무료 플랜은 브랜치 보호·포크 PR 설정이 불가) 공개로 전환할 때 같은 설정을 적용한다고 안내한다. 실패한 항목은 중단하지 말고 보고한다. `main` 직행 프로젝트이므로 PR 필수는 넣지 않는다.
+- 원격 저장소가 **public**이고 admin 권한이면 외부 기여 방어 설정을 점검해 맞춘다. private이면 건너뛰고(무료 플랜은 브랜치 보호·포크 PR 설정이 불가) 공개로 전환할 때 같은 설정을 적용한다고 안내한다. 실패한 항목은 중단하지 말고 보고한다. 브랜치 보호는 `repo-settings.sh`가 맞춘다.
 
   ```sh
   gh api -X PUT repos/{owner}/{repo}/actions/permissions/fork-pr-contributor-approval -f approval_policy=all_external_contributors
   gh api -X PATCH repos/{owner}/{repo} --input - <<'EOF'
   {"security_and_analysis":{"secret_scanning":{"status":"enabled"},"secret_scanning_push_protection":{"status":"enabled"}}}
-  EOF
-  gh api -X PUT repos/{owner}/{repo}/branches/main/protection --input - <<'EOF'
-  {"required_status_checks":null,"enforce_admins":false,"required_pull_request_reviews":null,"restrictions":null,"allow_force_pushes":false,"allow_deletions":false}
   EOF
   ```
 

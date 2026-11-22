@@ -27,12 +27,12 @@ fi
 아무것도 쓰지 않고 아래를 한 번에 조회한다. 파일·이력·설정을 바꾸는 명령은 이 단계에서 실행하지 않는다.
 
 - **베이스라인 차이**: `sh "$src/baseline/apply.sh" --dry-run .`의 CREATED·DIFFERS·UPDATED·APPENDED 목록.
-- **Git 상태**: 미커밋 변경(사용자 작업 중인 파일은 건드리지 않는다), 현재·기본 브랜치, `develop` 유무, 원격, 훅 경로, 커밋 이메일이 noreply인지.
+- **Git 상태**: 미커밋 변경(사용자 작업 중인 파일은 건드리지 않는다), 현재·기본 브랜치, `develop` 유무(Cloudflare Pages 배포나 사용자 요청이 아니면 폐지 후보), 원격, 훅 경로, 커밋 이메일이 noreply인지, 프로젝트 구역의 `ysm:commit-lang` 선언 유무(없으면 최근 커밋 제목으로 언어를 추정해 제안), 최근 `main` 직접 커밋·force push 여부.
 - **의존성·환경**: 프로젝트 밖에 설치·캐시가 있는지(전역 node·pip, 홈의 캐시), `mise.toml`, `.node-version`·`.python-version`, `package.json`의 `devDependencies`, `uv`·`.venv` 사용 여부, 도구 소비형 계약(`runtime-pins.json`, `.uv-*` 경로) 파일이 있는지와 계약 금지 파일(`pyproject.toml`·`.venv`·`.python-version`)이 섞여 있는지. 섞여 있으면 어느 쪽인지 사용자에게 묻는다. 전역 도구는 삭제하지 말고 목록만 만든다.
 - **AI 표식**: 이력에 `Co-Authored-By: Claude`·`Generated with` 같은 표식이 있는지(`git log --grep`), `gh api repos/{owner}/{repo}/contributors`에 AI 계정이 있는지, 원격에 푸시된 커밋인지.
 - **공개 안전**: 추적 파일의 비밀값·개인 절대경로·`.env` 추적 여부, `.gitignore` 상태.
 - **문서**: 루트에 있는 기획·인수인계 문서, 기존 `AGENTS.md`·`CLAUDE.md` 내용과 충돌하는 규칙.
-- **GitHub 설정**(admin 권한일 때): 기본 브랜치(`main`이어야 함), "Automatically delete head branches", 공개 저장소의 외부 기여 방어 설정, Dependabot 보안 알림. 점검 방법은 `$src/skills/new-project/SKILL.md` 5단계와 같다. 기본 브랜치가 `main`이 아니면 `gh api -X PATCH repos/{owner}/{repo} -f default_branch=main`으로 바꾸되, `main`에 필요한 파일(Dependabot 설정, 예약 워크플로)이 있는지 먼저 확인하고 승인받는다.
+- **GitHub 설정**(admin 권한일 때): `sh "$src/baseline/repo-settings.sh" <소유자/저장소>`(점검만 한다)로 병합 방식·브랜치 자동 삭제·브랜치 보호를 보고, 기본 브랜치(`main`이어야 함), 공개 저장소의 외부 기여 방어 설정, Dependabot 보안 알림도 본다. 나머지 점검 방법은 `$src/skills/new-project/SKILL.md` 5단계와 같다. 기본 브랜치가 `main`이 아니면 `gh api -X PATCH repos/{owner}/{repo} -f default_branch=main`으로 바꾸되, `main`에 필요한 파일(Dependabot 설정, 예약 워크플로)이 있는지 먼저 확인하고 승인받는다.
 - **Dependabot 설정**: `.github/dependabot.yml`이 `$src/baseline/dependabot.yml` 표준과 다른 점(주기, 묶기, PR 한도, 접두사, `target-branch`, 매니페스트에 없는 항목). 기본 브랜치가 `main`이고 `develop`을 쓰면 설정이 릴리스 뒤에야 적용된다는 점도 보고한다.
 
 ## 3. 진단을 보고하고 승인받는다
@@ -45,8 +45,9 @@ fi
 2. **프로젝트 구역**: 기존 `AGENTS.md`의 프로젝트 고유 내용은 `ysm-baseline` 마커 밖에 유지하고, 베이스라인과 겹치는 문장은 지운다. 프로젝트 규칙이 베이스라인과 충돌하면 프로젝트 규칙을 남기고 그 사실을 보고한다.
 3. **의존성**: 프로젝트 안으로 옮길 수 있는 것만 옮기고(`.node-version`, `devDependencies`, `uv sync`, 도구 소비형은 계약 파일), 검증한 뒤에 보고한다. 전역 설치물 삭제는 사용자 몫이다.
 4. **Dependabot**: `$src/baseline/dependabot.yml`을 `.github/dependabot.yml`로 복사하고(기존 파일이 있으면 표준에 맞춰 병합) 그 파일 머리의 안내대로 고친다. 보관했거나 1년 넘게 커밋이 없는 저장소는 설정 파일을 만들지 않는다.
-5. **문서 위치**: 루트의 입력·기획 문서를 `docs/`로 옮기고 링크를 고친다.
-6. **AI 표식 정리(승인·직접 요청된 경우만)**: 먼저 백업 브랜치 또는 태그를 만든다. 로컬 이력에서 표식을 제거하고, 원격 반영(force push)은 사용자가 그 대화에서 명시적으로 요청했을 때만 한다. contributors 목록은 GitHub 캐시 때문에 바로 사라지지 않을 수 있으므로, 반영 뒤 `gh api`로 다시 조회해 결과를 그대로 보고한다.
+5. **GitHub 설정**: 승인받으면 `sh "$src/baseline/repo-settings.sh" --apply <소유자/저장소>`로 맞춘다. 이미 있는 PR 흐름이 깨지지 않는지(`develop` 유무에 따른 merge commit 허용) 먼저 확인한다.
+6. **문서 위치**: 루트의 입력·기획 문서를 `docs/`로 옮기고 링크를 고친다.
+7. **AI 표식 정리(승인·직접 요청된 경우만)**: 먼저 백업 브랜치 또는 태그를 만든다. 로컬 이력에서 표식을 제거하고, 원격 반영(force push)은 사용자가 그 대화에서 명시적으로 요청했을 때만 한다. contributors 목록은 GitHub 캐시 때문에 바로 사라지지 않을 수 있으므로, 반영 뒤 `gh api`로 다시 조회해 결과를 그대로 보고한다.
 
 ## 5. 검증하고 보고한다
 

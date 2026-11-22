@@ -11,5 +11,9 @@
 
 {{RUN_AND_VERIFY}}
 
+## 작업 방식
+
+<!-- ysm:commit-lang={{COMMIT_LANG}} -->
+
 <!-- ysm-baseline:start -->
 <!-- ysm-baseline:end -->

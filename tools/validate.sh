@@ -15,7 +15,7 @@ for d in "$root"/skills/*/; do
   sed -n '2,/^---$/p' "$f" | grep -q '^description: .\{20,\}' || err "$name: description 없음 또는 너무 짧음"
 done
 
-for s in "$root"/baseline/apply.sh "$root"/global/apply-global.sh "$root"/baseline/files/.githooks/* "$root"/tools/*.sh; do
+for s in "$root"/baseline/apply.sh "$root"/baseline/repo-settings.sh "$root"/global/apply-global.sh "$root"/baseline/files/.githooks/* "$root"/tools/*.sh; do
   sh -n "$s" 2>/dev/null || err "$s: 셸 문법 오류"
 done
 

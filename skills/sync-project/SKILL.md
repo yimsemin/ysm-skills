@@ -31,6 +31,7 @@ fi
 - **규칙 변경 내용**: 프로젝트 `AGENTS.md`의 마커 구역과 `$src/baseline/agents-block.md`를 `diff`로 비교해 추가·삭제·수정된 규칙을 문장 단위로 요약한다. 마커 구역은 통째로 교체되므로 프로젝트가 마커 안을 직접 고친 부분이 있으면 따로 표시한다. 그 내용은 교체 전에 마커 밖 프로젝트 구역으로 옮길지 정해야 한다.
 - **프로젝트 구역과의 충돌**: 새 규칙과 겹치거나 모순되는 마커 밖 문장.
 - **Dependabot**: `$src/baseline/dependabot.yml` 표준이 바뀌었으면 `.github/dependabot.yml`과 차이를 본다. 설정이 없는 보관 저장소는 제외한다.
+- **GitHub 설정**(admin 권한일 때): `sh "$src/baseline/repo-settings.sh" <소유자/저장소>`(점검만 한다)의 DIFFERS 목록. 프로젝트 구역에 `ysm:commit-lang` 선언이 없으면 함께 보고한다.
 - **전역 지침**: `$src/global/VERSION`이 이 컴퓨터에 적용된 것과 다르면 `$src/skills/setup-machine/SKILL.md`를 따르라고 안내한다. 이 스킬에서 전역을 바꾸지 않는다.
 - **미커밋 변경**: 있으면 그 파일은 건드리지 않는다.
 
@@ -43,6 +44,7 @@ fi
 1. `sh "$src/baseline/apply.sh" .`로 마커 구역과 새 파일을 갱신한다. 기존 파일은 덮어쓰지 않는다. `DIFFERS`는 `$src/baseline/files/<경로>`와 읽어서 병합한다. 베이스라인을 따르는 것이 기본이고, 프로젝트 내용에 유지할 만한 특별한 이점이 있으면 유지하며, 애매하면 사용자에게 묻는다.
 2. 마커 밖 프로젝트 구역에서 새 베이스라인과 겹치는 문장을 지운다. 충돌하면 프로젝트 규칙을 남기고 보고한다.
 3. Dependabot 표준이 바뀌었으면 승인받은 만큼 `.github/dependabot.yml`을 맞춘다.
+4. GitHub 설정 차이는 승인받으면 `sh "$src/baseline/repo-settings.sh" --apply <소유자/저장소>`로 맞추고, `ysm:commit-lang` 선언이 없으면 최근 커밋으로 언어를 추정해 프로젝트 구역에 추가한다.
 
 ## 5. 검증하고 보고한다
 
