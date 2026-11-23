@@ -6,7 +6,10 @@
 #   보호 브랜치  main(있으면 develop): PR 필수, 관리자 포함, force push·삭제 금지
 #               AGENTS.md에 `<!-- ysm:direct-main -->`가 있으면 main의 PR 필수는 빼고 나머지는 같다
 #               이미 걸려 있는 필수 상태 확인(required_status_checks)은 그대로 보존한다
-#   브랜치 자동 삭제  끔
+#   브랜치 자동 삭제  끔(develop 같은 장기 브랜치가 릴리스 PR 병합 때 지워지지 않게. 작업 브랜치 정리는 에이전트가 한다)
+#   기본 브랜치  main(다르면 INFO만. 바꾸기 전에 main에 필요한 파일이 있는지 사람이 확인한다)
+#   보안  Dependabot 보안 알림 켬. 활성 저장소(보관 안 됨, 1년 안에 푸시)는 보안 업데이트도 켬
+#   공개 저장소만  비밀값 스캔·푸시 보호 켬, 외부 기여자의 포크 PR 워크플로는 승인 필요
 # 출력(한 줄에 하나): SAME|DIFFERS|SET|INFO <항목>
 #   비공개 저장소의 무료 플랜은 브랜치 보호를 걸 수 없다(INFO). 그 경우 로컬 훅만 작동한다.
 set -eu
@@ -15,8 +18,8 @@ apply=0
 [ "${1:-}" = "--apply" ] && { apply=1; shift; }
 repo="${1:-$(gh repo view --json nameWithOwner -q .nameWithOwner)}"
 
-info="$(gh api "repos/$repo" --jq '[.permissions.admin, .allow_squash_merge, .allow_merge_commit, .allow_rebase_merge, (.squash_merge_commit_title // "none"), (.squash_merge_commit_message // "none"), .delete_branch_on_merge, .default_branch] | @tsv')"
-IFS='	' read -r admin sq mc rb sqt sqm del defb <<EOF
+info="$(gh api "repos/$repo" --jq '[.permissions.admin, .allow_squash_merge, .allow_merge_commit, .allow_rebase_merge, (.squash_merge_commit_title // "none"), (.squash_merge_commit_message // "none"), .delete_branch_on_merge, .default_branch, .visibility, (.archived == false and (now - (.pushed_at | fromdateiso8601)) < 31536000), (.security_and_analysis.secret_scanning.status // "none"), (.security_and_analysis.secret_scanning_push_protection.status // "none")] | @tsv')"
+IFS='	' read -r admin sq mc rb sqt sqm del defb vis active ss sspp <<EOF
 $info
 EOF
 [ "$admin" = "true" ] || { echo "INFO $repo: admin 권한이 없어 건너뛴다"; exit 0; }
@@ -47,7 +50,33 @@ if [ "$diff" = 1 ] && [ "$apply" = 1 ]; then
   echo "SET 병합 방식"
 fi
 
-# 2) 브랜치 보호
+# 2) 보안
+if gh api "repos/$repo/vulnerability-alerts" >/dev/null 2>&1; then alerts=true; else alerts=false; fi
+diff=0; check vulnerability_alerts "$alerts" true
+[ "$diff" = 1 ] && [ "$apply" = 1 ] && gh api -X PUT "repos/$repo/vulnerability-alerts" >/dev/null && echo "SET vulnerability_alerts"
+if [ "$active" = true ]; then
+  fixes="$(gh api "repos/$repo/automated-security-fixes" --jq .enabled 2>/dev/null || echo false)"
+  diff=0; check automated_security_fixes "$fixes" true
+  [ "$diff" = 1 ] && [ "$apply" = 1 ] && gh api -X PUT "repos/$repo/automated-security-fixes" >/dev/null && echo "SET automated_security_fixes"
+else
+  echo "INFO 보관했거나 1년 넘게 푸시가 없는 저장소라 보안 업데이트는 점검하지 않는다"
+fi
+if [ "$vis" = public ]; then
+  diff=0; check secret_scanning "$ss" enabled; check secret_scanning_push_protection "$sspp" enabled
+  if [ "$diff" = 1 ] && [ "$apply" = 1 ]; then
+    gh api -X PATCH "repos/$repo" --input - >/dev/null <<'EOF'
+{"security_and_analysis":{"secret_scanning":{"status":"enabled"},"secret_scanning_push_protection":{"status":"enabled"}}}
+EOF
+    echo "SET 비밀값 스캔"
+  fi
+  fork="$(gh api "repos/$repo/actions/permissions/fork-pr-contributor-approval" --jq .approval_policy 2>/dev/null || echo unknown)"
+  diff=0; check fork_pr_approval "$fork" all_external_contributors
+  [ "$diff" = 1 ] && [ "$apply" = 1 ] && gh api -X PUT "repos/$repo/actions/permissions/fork-pr-contributor-approval" -f approval_policy=all_external_contributors >/dev/null && echo "SET fork_pr_approval"
+else
+  echo "INFO 비공개 저장소라 비밀값 스캔·포크 PR 설정은 건너뛴다(공개로 바꾸면 다시 실행한다)"
+fi
+
+# 3) 브랜치 보호
 branches="main"
 [ "$has_develop" = true ] && branches="main develop"
 for b in $branches; do
