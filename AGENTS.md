@@ -22,7 +22,7 @@ sh baseline/repo-settings.sh <소유자/저장소>   # GitHub 병합 방식·브
 <!-- ysm:direct-main -->
 <!-- ysm:commit-lang=en -->
 - 베이스라인 예외: `CHANGELOG.md`는 두지 않는다(변경 이력은 git 이력). 패키지 매니페스트와 워크플로가 없어 `.github/dependabot.yml`도 두지 않고 GitHub의 Dependabot 보안 알림만 켜 둔다. 매니페스트나 워크플로를 추가하면 `baseline/dependabot.yml`을 복사해 쓴다.
-- 버전(`baseline/VERSION`, `global/VERSION`, `.claude-plugin/plugin.json`)은 사용자가 올리라고 지시할 때만 올린다.
+- 버전(`.claude-plugin/plugin.json`, `global/VERSION`)은 사용자가 올리라고 지시할 때만 올린다.
 
 ## 구조
 

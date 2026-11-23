@@ -1,6 +1,6 @@
 ---
 name: sync-project
-description: Bring a project that already follows the ysm baseline up to the current baseline version - show what changed since the recorded version, get approval, update the AGENTS.md baseline block and baseline files, merge conflicts, and verify. Use when ysm-skills was updated, or the user asks to sync, update or refresh the ysm rules in a project. ysm 베이스라인 갱신 반영, 프로젝트 규칙 최신화, 버전 차이 확인.
+description: Bring a project that already follows the ysm baseline up to the current baseline - show what differs from the current baseline, get approval, update the AGENTS.md baseline block and baseline files, merge conflicts, and verify. Use when ysm-skills was updated, or the user asks to sync, update or refresh the ysm rules in a project. ysm 베이스라인 갱신 반영, 프로젝트 규칙 최신화, 차이 확인.
 ---
 
 # sync-project
