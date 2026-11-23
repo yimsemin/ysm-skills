@@ -7,7 +7,7 @@ description: Start a brand-new project with the ysm baseline (AGENTS.md, commit-
 
 빈 폴더(또는 거의 빈 폴더)에서 새 프로젝트를 시작한다. 대상은 사용자가 에이전트를 연 작업 폴더이고, 베이스라인을 받아 온 임시 폴더가 아니다. 사용자는 형식 없이 자유 문장과 저장소 링크만 줄 수 있으며, 그것으로 충분하다. 기존 코드가 있는 폴더면 이 스킬을 쓰지 말고 `adopt-project`를 안내한다. 규칙의 내용은 베이스라인(`AGENTS.md`의 `ysm-baseline` 구역)이 정본이므로 이 스킬에 다시 쓰지 않는다.
 
-## 0. 준비와 전역 지침 점검
+## 0. 준비
 
 베이스라인은 이 컴퓨터에 저장소가 있다고 가정하지 않는다. 플러그인으로 설치된 경우 그 경로를, 아니면 원격 저장소를 임시 폴더로 받아 쓴다.
 
@@ -23,8 +23,6 @@ fi
 <!-- ysm-locate:end -->
 
 셸 변수는 명령 호출 사이에 유지되지 않는다. 위 블록과 `$src`를 쓰는 명령은 한 번의 실행으로 묶거나, 출력한 경로를 이후 명령에 직접 적는다.
-
-그다음 `$src/skills/setup-machine/SKILL.md`의 2~5단계를 따라 전역 지침을 점검한다. 최신이면 조용히 넘어가고, 없거나 낡았으면 사용자에게 묻고 승인한 경우에만 갱신한다. 거절하면 건너뛰고 프로젝트만 진행한다.
 
 ## 1. 의도를 모은다
 
@@ -48,7 +46,7 @@ sh "$src/baseline/apply.sh" --noreply-email .
 
 저장소를 받을 수 없으면(권한·로그인 없음) 사용자에게 `gh auth login`과 저장소 접근 권한을 안내하고 멈춘다. 베이스라인을 기억에 의존해 재현하지 않는다.
 
-스크립트는 기존 파일을 덮어쓰지 않는다. 출력의 `DIFFERS` 줄이 있으면 해당 파일을 읽고 `$src/baseline/files/<경로>`와 비교해 병합한다. 베이스라인을 따르는 것이 기본이고, 사용자 내용에 유지할 만한 특별한 이점이 있으면 사용자 내용을 유지하며, 이점이 분명하지 않거나 애매하면 사용자에게 묻는다. `INFO noreply-email SKIPPED`가 나오면 `gh auth login`을 안내한다.
+빈 폴더라 대부분 `CREATED`다. `DIFFERS` 줄이 있으면 해당 파일을 읽고 `$src/baseline/seed/<경로>`와 비교해 병합한다(베이스라인을 따르는 것이 기본, 사용자 내용에 특별한 이점이 있으면 유지, 애매하면 질문). `INFO noreply-email SKIPPED`가 나오면 `gh auth login`을 안내한다.
 
 ## 4. 프로젝트 내용을 채운다
 
@@ -61,28 +59,6 @@ sh "$src/baseline/apply.sh" --noreply-email .
 ## 5. 검증하고 보고한다
 
 - `git config core.hooksPath`가 `.githooks`이고 `git config user.email`이 noreply인지 확인한다.
-- 이 폴더의 GitHub 원격 저장소가 있고 admin 권한이면, `sh "$src/baseline/repo-settings.sh" <소유자/저장소>`로 병합 방식·브랜치 자동 삭제·브랜치 보호를 점검하고 승인받아 `--apply`로 맞춘다(자동 삭제는 `develop` 같은 장기 브랜치가 릴리스 PR 병합 때 지워지는 것을 막으려고 끈다. 작업 브랜치 정리는 규칙에 따라 에이전트가 한다). 권한이 없으면 맞추지 못했다고 보고한다. 저장소가 아직 없으면 사용자가 생성을 요청할 때 함께 확인한다.
-
-  기본 브랜치는 `main`으로 둔다(`defaultBranchRef`로 확인).
-
-  ```sh
-  gh repo view --json viewerPermission,defaultBranchRef
-  ```
-
-- 원격 저장소가 **public**이고 admin 권한이면 외부 기여 방어 설정을 점검해 맞춘다. private이면 건너뛰고(무료 플랜은 브랜치 보호·포크 PR 설정이 불가) 공개로 전환할 때 같은 설정을 적용한다고 안내한다. 실패한 항목은 중단하지 말고 보고한다. 브랜치 보호는 `repo-settings.sh`가 맞춘다.
-
-  ```sh
-  gh api -X PUT repos/{owner}/{repo}/actions/permissions/fork-pr-contributor-approval -f approval_policy=all_external_contributors
-  gh api -X PATCH repos/{owner}/{repo} --input - <<'EOF'
-  {"security_and_analysis":{"secret_scanning":{"status":"enabled"},"secret_scanning_push_protection":{"status":"enabled"}}}
-  EOF
-  ```
-
-- 매니페스트(`package.json` 등)나 워크플로가 생기면 `$src/baseline/dependabot.yml`을 `.github/dependabot.yml`로 복사해 그 파일 머리의 안내대로 고친다. 원격 저장소가 있고 admin 권한이면 보안 알림을 켠다.
-
-  ```sh
-  gh api -X PUT repos/{owner}/{repo}/vulnerability-alerts
-  gh api -X PUT repos/{owner}/{repo}/automated-security-fixes
-  ```
-
+- 이 폴더의 GitHub 원격 저장소가 있으면 `sh "$src/baseline/repo-settings.sh"`로 병합 방식·브랜치 보호·기본 브랜치·보안 설정(공개 저장소의 비밀값 스캔·포크 PR 승인 포함)을 점검하고, 승인받아 `--apply`로 맞춘다. admin 권한이 없으면 스크립트가 건너뛰므로 맞추지 못했다고 보고한다. 저장소가 아직 없으면 사용자가 생성을 요청할 때 함께 한다.
+- 매니페스트(`package.json` 등)나 워크플로가 생기면 `$src/baseline/dependabot.yml`을 `.github/dependabot.yml`로 복사해 그 파일 머리의 안내대로 고친다.
 - 만든 파일을 짧게 보고하고, 사용자가 정해야 할 것을 질문으로 남긴다. 첫 커밋과 GitHub 저장소 생성은 사용자가 요청할 때 한다(첫 커밋은 `main`, 제목 예: `chore: initialize project`).

@@ -1,6 +1,6 @@
 # Cloudflare Pages 배포 기준
 
-이 문서는 Cloudflare Pages 배포의 정본이다. 대상 저장소에는 복사하지 않고, 배포할 때마다 이 저장소에서 읽는다. 절차는 [deploy-cloudflare-pages 스킬](../skills/deploy-cloudflare-pages/SKILL.md)이 따른다. 계정 ID·루트 도메인·프로젝트 이름은 여기에 적지 않고 실행할 때 확인하거나 사용자에게 묻는다. 토큰은 사용자가 자기 Cloudflare 계정에서 발급해 이 저장소를 연 폴더에 둔다는 전제로 쓰였고, Cloudflare는 새 프로젝트에 Workers를 권장하지만 이 표준은 Pages(Git 연동)를 쓴다.
+이 문서는 Cloudflare Pages 배포의 정본이다. 대상 저장소에는 복사하지 않고, 배포할 때마다 이 저장소에서 읽는다. 절차는 [deploy-cloudflare-pages 스킬](../.agents/skills/deploy-cloudflare-pages/SKILL.md)이 따른다. 계정 ID·루트 도메인·프로젝트 이름은 여기에 적지 않고 실행할 때 확인하거나 사용자에게 묻는다. 토큰은 사용자가 자기 Cloudflare 계정에서 발급해 이 저장소를 연 폴더에 둔다는 전제로 쓰였고, Cloudflare는 새 프로젝트에 Workers를 권장하지만 이 표준은 Pages(Git 연동)를 쓴다.
 
 ## 표준
 

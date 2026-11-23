@@ -9,7 +9,7 @@ description: Set up, audit or fix a project's Cloudflare Pages deployment (GitHu
 
 ## 실행 위치
 
-**Cloudflare 배포와 관리는 이 저장소 폴더에서만 한다.** Cloudflare API 토큰이 이 저장소의 `.env`(또는 환경변수)에만 있기 때문이다. 다른 프로젝트 폴더에서 이 저장소를 참조해 배포하는 방식은 쓰지 않는다. 그런 요청이 오면 이 저장소 폴더에서 다시 요청하라고 안내하고 멈춘다.
+**Cloudflare 배포와 관리는 이 저장소 폴더에서만 한다.** Cloudflare API 토큰이 이 저장소의 `.env`(또는 환경변수)에만 있기 때문이며, 이 스킬도 이 저장소에만 있다.
 
 사용자는 이 폴더에서 "(소유자/대상 저장소)를 Cloudflare Pages 배포해줘"라고 한다. 대상 저장소는 `gh api`로만 읽고, 코드 변경이 필요하면 직접 고치지 않는다(4단계). 이 스킬이나 표준 문서의 내용·링크를 대상 저장소의 `AGENTS.md`·`README.md`·베이스라인에 복사하지 않는다.
 
