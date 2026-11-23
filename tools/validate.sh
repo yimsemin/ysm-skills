@@ -1,11 +1,11 @@
 #!/bin/sh
-# 스킬 형식과 셸 스크립트 문법을 검사한다. 런타임 설치 없이 sh만 쓴다.
+# 스킬 형식, 셸 스크립트 문법, 루트 사본과 baseline의 일치, 비밀값을 검사한다. 런타임 설치 없이 sh만 쓴다.
 set -u
 root="$(cd "$(dirname "$0")/.." && pwd)"
 fail=0
 err() { echo "FAIL $1"; fail=1; }
 
-for d in "$root"/skills/*/; do
+for d in "$root"/skills/*/ "$root"/.agents/skills/*/; do
   name="$(basename "$d")"
   f="$d/SKILL.md"
   [ -f "$f" ] || { err "$name: SKILL.md 없음"; continue; }
@@ -15,18 +15,23 @@ for d in "$root"/skills/*/; do
   sed -n '2,/^---$/p' "$f" | grep -q '^description: .\{20,\}' || err "$name: description 없음 또는 너무 짧음"
 done
 
-for s in "$root"/baseline/apply.sh "$root"/baseline/repo-settings.sh "$root"/global/apply-global.sh "$root"/baseline/files/.githooks/* "$root"/tools/*.sh; do
+for s in "$root"/baseline/apply.sh "$root"/baseline/repo-settings.sh "$root"/global/apply-global.sh "$root"/baseline/managed/.githooks/* "$root"/tools/*.sh "$root"/skills/*/scripts/*.sh; do
   sh -n "$s" 2>/dev/null || err "$s: 셸 문법 오류"
 done
 
-for f in "$root"/global/agents.md "$root"/global/settings.json "$root"/global/VERSION; do [ -f "$f" ] || err "$f 없음"; done
+for f in "$root"/global/agents.md "$root"/global/settings.json; do [ -f "$f" ] || err "$f 없음"; done
 
 # 루트의 baseline 사본이 정본과 같은지 확인한다.
-(cd "$root/baseline/files" && find . -type f | sed 's|^\./||') | while IFS= read -r rel; do
-  [ -f "$root/$rel" ] && ! cmp -s "$root/baseline/files/$rel" "$root/$rel" && echo "FAIL 루트 사본이 baseline과 다름: $rel (sh baseline/apply.sh . 로 갱신)"
+for kind in managed seed; do
+  (cd "$root/baseline/$kind" && find . -type f | sed 's|^\./||') | while IFS= read -r rel; do
+    [ -f "$root/$rel" ] && ! cmp -s "$root/baseline/$kind/$rel" "$root/$rel" && echo "FAIL 루트 사본이 baseline과 다름: $rel (sh baseline/apply.sh . 로 갱신)"
+  done
 done | grep -q FAIL && { echo "FAIL 루트 사본이 baseline과 다름"; fail=1; }
 blk="$(sed -n '/ysm-baseline:start/,/ysm-baseline:end/p' "$root/AGENTS.md" | sed '1d;$d')"
 [ "$blk" = "$(cat "$root/baseline/agents-block.md")" ] || err "AGENTS.md의 baseline 구역이 agents-block.md와 다름"
+
+# 저장소 전용 스킬: Claude Code용 사본(.claude/skills)이 정본(.agents/skills)과 같아야 한다.
+diff -r "$root/.agents/skills" "$root/.claude/skills" >/dev/null 2>&1 || err ".claude/skills가 .agents/skills와 다름 (cp -R .agents/skills/. .claude/skills/ 로 갱신)"
 
 # 스킬마다 ysm-locate 블록이 같아야 한다.
 n="$(for f in "$root"/skills/*/SKILL.md; do grep -q 'ysm-locate:start' "$f" && sed -n '/ysm-locate:start/,/ysm-locate:end/p' "$f" | cksum; done | sort -u | wc -l | tr -d ' ')"
