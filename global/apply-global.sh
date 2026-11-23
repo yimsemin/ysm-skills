@@ -26,9 +26,10 @@ done
 [ -n "$mode" ] || { echo "$usage" >&2; exit 2; }
 
 here="$(cd "$(dirname "$0")" && pwd)"
-version="$(tr -d '[:space:]' < "$here/VERSION")"
 body="$here/agents.md"
-start="<!-- ysm-global:start v$version -->"
+# 정본 내용의 체크섬. 지침이 바뀔 때만 달라지고, 대상의 시작 마커에 기록한다(baseline/apply.sh와 같은 방식).
+rev="$(cksum < "$body" | cut -d' ' -f1)"
+start="<!-- ysm-global:start rev=$rev -->"
 end="<!-- ysm-global:end -->"
 md_targets="$home/.claude/CLAUDE.md $home/.codex/AGENTS.md"
 settings="$home/.claude/settings.json"
@@ -66,13 +67,13 @@ md_status() {
 
 # 설정: 필요한 ask 규칙이 모두 있는지 확인하고, 없으면 기존 키를 보존한 채 추가한다.
 settings_py() {
-  python3 - "$1" "$here/settings.json" "$2" <<'PY'
+  PYTHONUTF8=1 "$py" - "$1" "$here/settings.json" "$2" <<'PY' | tr -d '\r'
 import json, sys, os
 path, srcpath, action = sys.argv[1:4]
-want = json.load(open(srcpath))["permissions"]["ask"]
+want = json.load(open(srcpath, encoding="utf-8"))["permissions"]["ask"]
 cur = {}
 if os.path.exists(path):
-    cur = json.load(open(path))
+    cur = json.load(open(path, encoding="utf-8"))
 have = cur.get("permissions", {}).get("ask", [])
 missing = [r for r in want if r not in have]
 if action == "status":
@@ -82,11 +83,14 @@ elif action == "diff":
 elif action == "apply" and missing:
     cur.setdefault("permissions", {}).setdefault("ask", []).extend(missing)
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    json.dump(cur, open(path, "w"), indent=2, ensure_ascii=False)
-    open(path, "a").write("\n")
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(cur, f, indent=2, ensure_ascii=False)
+        f.write("\n")
 PY
 }
-have_py=0; command -v python3 >/dev/null 2>&1 && have_py=1
+# Windows의 python3는 실행되지 않는 스토어 별칭일 수 있어 실제로 실행해 보고 고른다.
+py=""; for c in python3 python; do "$c" -c "" >/dev/null 2>&1 && { py="$c"; break; }; done
+have_py=0; [ -n "$py" ] && have_py=1
 
 backup() { [ -f "$1" ] && cp -p "$1" "$1.bak-$(date +%Y%m%d%H%M%S)" || true; }
 
