@@ -10,10 +10,12 @@
 ## 실행과 검증
 
 ```sh
-sh tools/validate.sh                       # 스킬 형식·셸 문법·비밀값 검사
+sh tools/validate.sh                       # 스킬 형식·셸 문법·루트 사본 일치·비밀값 검사
 sh baseline/apply.sh --dry-run <폴더>      # 베이스라인 적용 미리보기
+sh baseline/apply.sh --check <폴더>        # 대상 프로젝트의 공통 규칙이 낡았는지(CURRENT/STALE/UNKNOWN)
 sh global/apply-global.sh --check          # 이 컴퓨터의 전역 지침 상태
-sh baseline/repo-settings.sh <소유자/저장소>   # GitHub 병합 방식·브랜치 보호 점검(--apply로 맞춤)
+sh baseline/repo-settings.sh <소유자/저장소>   # GitHub 병합 방식·브랜치 보호·보안 설정 점검(--apply로 맞춤)
+sh tools/test-hooks.sh                     # 훅 회귀 테스트(임시 저장소에서 차단·허용 확인)
 ```
 
 ## 작업 방식
@@ -22,14 +24,16 @@ sh baseline/repo-settings.sh <소유자/저장소>   # GitHub 병합 방식·브
 <!-- ysm:direct-main -->
 <!-- ysm:commit-lang=en -->
 - 베이스라인 예외: `CHANGELOG.md`는 두지 않는다(변경 이력은 git 이력). 패키지 매니페스트와 워크플로가 없어 `.github/dependabot.yml`도 두지 않고 GitHub의 Dependabot 보안 알림만 켜 둔다. 매니페스트나 워크플로를 추가하면 `baseline/dependabot.yml`을 복사해 쓴다.
-- 버전(`.claude-plugin/plugin.json`, `global/VERSION`)은 사용자가 올리라고 지시할 때만 올린다.
+- 버전은 `.claude-plugin/plugin.json` 하나이고 사용자가 올리라고 지시할 때만 올린다. 베이스라인 구역과 전역 지침 구역의 최신 여부는 버전이 아니라 시작 마커의 `rev`(정본 체크섬)로 판단한다.
 
 ## 구조
 
-- 이 저장소를 언급하며 새 프로젝트의 기본 셋팅 요청이 오면 `skills/new-project/SKILL.md`를 따른다. 대상은 사용자가 에이전트를 연 작업 폴더이고 이 저장소의 사본이 아니다. 첫 단계가 전역 지침 점검(`skills/setup-machine`)이다.
-- Cloudflare 배포·관리는 이 저장소에서만 한다(API 토큰은 이 저장소 `.env`에만 둔다). 이 저장소에서 대상 저장소의 Pages 배포를 요청받으면 `skills/deploy-cloudflare-pages/SKILL.md`를 따르고, 다른 프로젝트 폴더에서 온 요청은 이 저장소에서 다시 하도록 안내한다. 기준의 정본은 `docs/cloudflare-pages.md`이며 이 내용은 이 저장소에만 두고 `baseline/`·`global/`·대상 저장소 문서로 복사하지 않는다.
-- `skills/<name>/SKILL.md`: 오픈 표준 스킬. 폴더명 = `name`(영문 kebab-case), `description`은 한영 키워드 병기, 본문은 한국어. 스킬은 이 컴퓨터에 저장소가 있다고 가정하지 않고, 플러그인 경로(`CLAUDE_PLUGIN_ROOT`) 또는 원격 저장소를 임시 폴더로 받아 쓴다(`ysm-locate` 블록, 스킬마다 동일해야 한다).
-- `baseline/`: 프로젝트로 **복사**되는 저장소 규칙의 정본. `files/`는 그대로 복사, `agents-block.md`는 AGENTS.md의 마커 구역에 삽입. `repo-settings.sh`는 GitHub 병합 방식·브랜치 보호를 점검·적용하며 복사되지 않고 스킬이 `$src`에서 실행한다.
+- 이 저장소를 언급하며 새 프로젝트의 기본 셋팅 요청이 오면 `skills/new-project/SKILL.md`를 따른다. 대상은 사용자가 에이전트를 연 작업 폴더이고 이 저장소의 사본이 아니다.
+- Cloudflare 배포·관리는 이 저장소에서만 한다(API 토큰은 이 저장소 `.env`에만 둔다). 대상 저장소의 Pages 배포를 요청받으면 `.agents/skills/deploy-cloudflare-pages/SKILL.md`를 따른다. 기준의 정본은 `docs/cloudflare-pages.md`이며 이 내용은 이 저장소에만 두고 `baseline/`·`global/`·대상 저장소 문서로 복사하지 않는다.
+- 스킬 이름으로 바꾸는 범위를 구분한다. `*-project` 스킬은 그 프로젝트의 파일·설정만, `*-machine` 스킬(`setup-machine`)은 이 컴퓨터의 전역 파일만 바꾼다. 전역 지침은 사용자가 `setup-machine`을 부를 때만 점검·갱신하고, 다른 스킬은 점검하지 않는다.
+- `skills/<name>/SKILL.md`: 플러그인으로 배포해 어느 프로젝트에서나 쓰는 오픈 표준 스킬. 폴더명 = `name`(영문 kebab-case), `description`은 한영 키워드 병기, 본문은 한국어. 스킬은 이 컴퓨터에 저장소가 있다고 가정하지 않고, 플러그인 경로(`CLAUDE_PLUGIN_ROOT`) 또는 원격 저장소를 임시 폴더로 받아 쓴다(`ysm-locate` 블록, 스킬마다 동일해야 한다). `setup-machine`만은 낡은 플러그인 사본으로 판단하지 않도록 항상 GitHub 최신본을 받으며 `ysm-locate` 블록을 쓰지 않는다.
+- `.agents/skills/<name>/SKILL.md`: 이 저장소에서만 쓰는 스킬의 정본(Codex가 읽는 위치). Claude Code는 `.claude/skills/`를 읽으므로 같은 내용을 복사해 두고, 정본을 고친 뒤 `cp -R .agents/skills/. .claude/skills/`로 맞춘다(`validate.sh`가 일치를 검사한다). 명령은 저장소 루트 기준으로 쓴다.
+- `baseline/`: 프로젝트로 **복사**되는 저장소 규칙의 정본. `managed/`는 관리 파일(훅·PR 템플릿, 대상에서 정본으로 교체), `seed/`는 시드 파일(없을 때만 생성, 다르면 병합), `agents-block.md`는 AGENTS.md의 마커 구역에 삽입, `agents-skeleton.md`는 AGENTS.md가 없을 때 만드는 뼈대, `dependabot.yml`은 매니페스트가 있는 프로젝트가 복사해 고쳐 쓰는 표준. `repo-settings.sh`는 GitHub 병합 방식·브랜치 보호·보안 설정을 점검·적용하며 복사되지 않고 스킬이 `$src`에서 실행한다.
 - `global/`: `agents.md`(전역 지침)와 `settings.json`(`gh issue` 쓰기를 항상 확인하게 하는 설정)의 정본. `apply-global.sh`가 `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`의 마커 구역과 `~/.claude/settings.json`에만 쓰고, 승인 없이 쓰지 않는다. `chat-claude.md`는 claude.ai, `chat-chatgpt.md`는 ChatGPT 계정 설정에 붙여넣는 대화용 지침(ChatGPT 칸 한도 1500자 이내)이며 `agents.md`와 겹치는 줄은 서로 다른 화면용이라 허용하되, 바꿀 때 함께 확인한다. 직업·자기소개 같은 개인 칸은 저장소에 두지 않는다.
 - 전역과 베이스라인에 같은 규칙을 두지 않는다. 판단 기준은 "저장소 없이도 성립하는가"이고, 성립하면 전역이다. 어느 쪽을 고치든 겹치는 문장이 없는지 에이전트가 직접 확인한다.
 - 루트의 `.githooks/`, `.claude/`, `.github/`, `.gitignore`, `.editorconfig`, `.gitattributes`, `CLAUDE.md`와 이 파일의 마커 구역은 baseline의 사본이다. 직접 고치지 말고 `baseline/`을 고친 뒤 `sh baseline/apply.sh .`로 갱신한다.
