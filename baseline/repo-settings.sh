@@ -67,7 +67,9 @@ for b in $branches; do
     echo "DIFFERS $b 보호: 현재 [$(printf '%s' "$cur" | tr '\t' ' ')] 목표 [enforce_admins force_push deletions pr_required = $(printf '%s' "$want" | tr '\t' ' ')]"
     if [ "$apply" = 1 ]; then
       if [ "$need_pr" = true ]; then pr='{"required_approving_review_count":0}'; else pr='null'; fi
-      sc="$(gh api "repos/$repo/branches/$b/protection" --jq 'if .required_status_checks then {strict: .required_status_checks.strict, contexts: .required_status_checks.contexts} else null end' 2>/dev/null | tr -d '\n')"
+      # 조회가 실패하면(보호 없음 등) gh가 오류 JSON을 stdout에 쓰므로 종료 코드로 걸러 null을 쓴다
+      sc="$(gh api "repos/$repo/branches/$b/protection" --jq 'if .required_status_checks then {strict: .required_status_checks.strict, contexts: .required_status_checks.contexts} else null end' 2>/dev/null)" || sc=null
+      sc="$(printf '%s' "$sc" | tr -d '\n')"
       [ -n "$sc" ] || sc=null
       gh api -X PUT "repos/$repo/branches/$b/protection" --input - >/dev/null <<EOF
 {"required_status_checks":$sc,"enforce_admins":true,"required_pull_request_reviews":$pr,"restrictions":null,"allow_force_pushes":false,"allow_deletions":false}
