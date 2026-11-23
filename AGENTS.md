@@ -106,7 +106,7 @@ UI·CLI·오류 안내처럼 사용자나 에이전트에게 보이는 문구가
 - 의존성·가상환경·캐시·데이터·설정·로그는 프로젝트 폴더 안에만 두어, 폴더를 지우면 함께 사라지게 한다. 설치물과 결과물을 프로젝트 밖(스크래치패드, 전역, 에이전트 메모리)에 두지 않는다. 폴더 하나만 받아도 다른 컴퓨터에서 이어갈 수 있어야 한다. 폴더 밖 저장은 사용자가 명시적으로 고른 경우만 허용한다.
   - Node: `package.json`의 `devDependencies`와 `npx`.
   - Python: `uv`로 프로젝트 `.venv`만 쓴다(`uv sync`, `uv add`).
-  - 런타임 버전은 `.node-version`, `.python-version`에만 고정한다. `mise.toml`은 두지 않는다.
+  - 런타임 버전은 `.node-version`, `.python-version`에만 고정한다. Node는 새로 정할 때의 최신 LTS 메이저까지만, Python은 사용하는 의존성이 모두 지원하는 최신 안정 마이너까지만 적는다(패치는 설치 도구가 최신을 받는다). `mise.toml`은 두지 않는다.
   - Python 코드를 직접 짜지 않고 외부 Python 도구를 고정 버전으로 쓰기만 하면 위 Python 항목과 `.python-version` 대신 아래 계약을 쓴다.
     - 핀: 루트 `runtime-pins.json` 하나에 도구별 정확한 버전(범위 금지).
     - 격리: `UV_CACHE_DIR`·`UV_TOOL_DIR`·`UV_PYTHON_INSTALL_DIR`을 프로젝트 안 `.uv-cache`·`.uv-tools`·`.uv-python`으로 지정하고(`.gitignore`에 추가), 정의는 한 곳에만 둔다.
