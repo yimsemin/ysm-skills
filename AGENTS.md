@@ -24,7 +24,7 @@ sh tools/test-hooks.sh                     # 훅 회귀 테스트(임시 저장�
 <!-- ysm:direct-main -->
 <!-- ysm:commit-lang=en -->
 - 베이스라인 예외: `CHANGELOG.md`는 두지 않는다(변경 이력은 git 이력). 패키지 매니페스트와 워크플로가 없어 `.github/dependabot.yml`도 두지 않고 GitHub의 Dependabot 보안 알림만 켜 둔다. 매니페스트나 워크플로를 추가하면 `baseline/dependabot.yml`을 복사해 쓴다.
-- 버전은 `.claude-plugin/plugin.json` 하나이고 사용자가 올리라고 지시할 때만 올린다. 베이스라인 구역과 전역 지침 구역의 최신 여부는 버전이 아니라 시작 마커의 `rev`(정본 체크섬)로 판단한다.
+- 이 저장소는 버전을 쓰지 않아 태그·GitHub Release를 두지 않는다. `.claude-plugin/`의 두 매니페스트에 `version`을 넣지 않는다(값이 있으면 바꾸기 전까지 설치된 플러그인이 갱신되지 않고, 없으면 커밋 SHA로 갱신된다). 베이스라인 구역과 전역 지침 구역의 최신 여부는 버전이 아니라 시작 마커의 `rev`(정본 체크섬)로 판단한다.
 
 ## 구조
 
