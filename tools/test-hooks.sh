@@ -93,5 +93,14 @@ sh "$root/baseline/apply.sh" "$tmp/p" >/dev/null
 [ "$(modes)" = "$all_exec" ] && pass "기존 훅의 실행 권한 복구" || bad "기존 훅의 실행 권한 복구"
 [ "$(git -C "$tmp/p" ls-files -s -- .githooks | cut -d' ' -f2)" = "$before" ] && pass "권한 복구는 내용 변경을 스테이지하지 않음" || bad "권한 복구는 내용 변경을 스테이지하지 않음"
 
+# apply.sh: 꺼지게 되는 기존 훅을 알린다.
+off() { sh "$root/baseline/apply.sh" --dry-run "$1" | grep '꺼지는 훅'; }
+git init -q -b main "$tmp/o"
+expect 1 "샘플 훅만 있으면 꺼지는 훅 안내 없음" off "$tmp/o"
+mkdir -p "$tmp/o/.git/hooks"; echo '#!/bin/sh' > "$tmp/o/.git/hooks/pre-push"
+expect 0 ".git/hooks의 훅이 꺼진다고 안내" off "$tmp/o"
+rm "$tmp/o/.git/hooks/pre-push"; git -C "$tmp/o" config core.hooksPath .husky/_
+expect 0 "다른 core.hooksPath의 훅이 꺼진다고 안내" off "$tmp/o"
+
 [ "$fail" = 0 ] && echo "OK"
 exit "$fail"

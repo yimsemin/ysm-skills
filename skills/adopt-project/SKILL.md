@@ -30,7 +30,7 @@ fi
 
 모든 경우:
 
-- **베이스라인 차이**: `sh "$src/baseline/apply.sh" --dry-run .`의 `CREATED`·`UPDATED`·`DIFFERS`·`APPENDED`. 관리 파일(훅·PR 템플릿)은 정본으로 교체되므로(`UPDATED`), 프로젝트가 훅에 넣은 전용 검사가 있으면 `.githooks/pre-push.local`로 옮길 항목으로 표시한다.
+- **베이스라인 차이**: `sh "$src/baseline/apply.sh" --dry-run .`의 `CREATED`·`UPDATED`·`DIFFERS`·`APPENDED`. 관리 파일(훅·PR 템플릿)은 정본으로 교체되므로(`UPDATED`), 프로젝트가 훅에 넣은 전용 검사와, `INFO 꺼지는 훅`이 알리는 다른 위치(`.git/hooks`, husky 등)의 검사를 확인한다. 전용 푸시 검사는 `.githooks/pre-push.local`로 옮길 항목으로 표시하고, 옛 베이스라인 그대로이거나 정본과 겹치는 검사는 옮기지 않는다. 푸시 외의 전용 검사는 옮길 자리가 없으므로 교체·비활성화로 사라진다고 표시한다.
 - **규칙 변경 내용**(갱신일 때): 프로젝트 `AGENTS.md`의 마커 구역과 `$src/baseline/agents-block.md`를 `diff`로 비교해 추가·삭제·수정된 규칙을 문장 단위로 요약한다. 프로젝트가 마커 안을 직접 고친 부분은 따로 표시한다(교체 전에 마커 밖으로 옮길지 정한다).
 - **프로젝트 구역과의 충돌**: 베이스라인과 겹치거나 모순되는 마커 밖 문장, 프로젝트 구역의 `ysm:commit-lang` 선언 유무(없으면 최근 커밋 제목으로 언어를 추정해 제안).
 - **GitHub 설정**(admin 권한일 때): `sh "$src/baseline/repo-settings.sh"`(점검만 한다)의 `DIFFERS`와 `INFO`. 기본 브랜치가 `main`이 아니면 바꾸기 전에 `main`에 필요한 파일(Dependabot 설정, 예약 워크플로)이 있는지 확인할 항목으로 둔다.
@@ -55,7 +55,7 @@ fi
 
 ## 4. 적용 (승인된 항목만)
 
-1. **베이스라인**: 관리 파일에 프로젝트 전용 검사가 있었으면 먼저 `.githooks/pre-push.local`로 옮긴다. 그다음 `sh "$src/baseline/apply.sh" .`(처음 적용이고 커밋 이메일을 noreply로 맞추려면 `--noreply-email`). `DIFFERS`는 읽어서 `$src/baseline/seed/<경로>`(관리 파일이면 `managed/`)와 병합한다. 베이스라인을 따르는 것이 기본이고, 프로젝트 내용에 유지할 만한 특별한 이점이 있으면 유지하며, 애매하면 묻는다.
+1. **베이스라인**: 2단계에서 옮기기로 한 전용 푸시 검사가 있으면 먼저 `.githooks/pre-push.local`로 옮긴다. 그다음 `sh "$src/baseline/apply.sh" .`(처음 적용이고 커밋 이메일을 noreply로 맞추려면 `--noreply-email`). `DIFFERS`는 읽어서 `$src/baseline/seed/<경로>`(관리 파일이면 `managed/`)와 병합한다. 베이스라인을 따르는 것이 기본이고, 프로젝트 내용에 유지할 만한 특별한 이점이 있으면 유지하며, 애매하면 묻는다.
 2. **프로젝트 구역**: 프로젝트 고유 내용은 마커 밖에 두고 베이스라인과 겹치는 문장은 지운다. 충돌하는 문장은 베이스라인 구역 첫 단락의 기준으로 정하고 보고한다. `ysm:commit-lang` 선언이 없으면 추가한다.
 3. **GitHub 설정**: `sh "$src/baseline/repo-settings.sh" --apply`. 이미 있는 PR 흐름이 깨지지 않는지(`develop` 유무에 따른 merge commit 허용) 먼저 확인한다. 기본 브랜치 변경은 `gh api -X PATCH repos/{owner}/{repo} -f default_branch=main`으로 따로 한다.
 4. **Dependabot**: `$src/baseline/dependabot.yml`을 `.github/dependabot.yml`로 복사하거나 표준에 맞춰 병합하고, 그 파일 머리의 안내대로 고친다. 보관했거나 1년 넘게 커밋이 없는 저장소는 설정 파일을 만들지 않는다.

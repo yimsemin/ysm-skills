@@ -64,7 +64,7 @@ for rel in $(list managed); do
   elif clean "$rel"; then
     echo "UPDATED $rel"
     case "$rel" in
-      .githooks/*) echo "INFO $rel: 교체되는 훅에 프로젝트 전용 검사가 있었는지 이전 내용(git show HEAD:$rel)과 비교한다. 전용 푸시 검사는 .githooks/pre-push.local 로 옮긴다" ;;
+      .githooks/*) echo "INFO $rel: 교체되는 훅에 프로젝트 전용 검사가 있었는지 이전 내용(git show HEAD:$rel)과 비교한다. 전용 푸시 검사만 .githooks/pre-push.local 로 옮기고, 옛 베이스라인이나 정본과 겹치는 검사는 옮기지 않는다" ;;
     esac
     copy "$src" "$dst"
   else echo "DIFFERS $rel (관리 파일인데 커밋되지 않은 변경이 있다)"
@@ -125,7 +125,20 @@ else
   fi
 fi
 
-# 4) 훅 활성화
+# 4) 훅 활성화. core.hooksPath를 바꾸면 다른 위치의 훅은 실행되지 않으므로 바꾸기 전에 알린다.
+off() { echo "INFO 꺼지는 훅 $1: 전용 푸시 검사만 .githooks/pre-push.local 로 옮기고, 정본과 겹치는 검사는 옮기지 않는다. 그 밖의 훅은 사용자에게 알린다"; }
+if [ -e "$target/.git" ]; then
+  old="$(git -C "$target" config core.hooksPath || true)"
+  case "$old" in
+    .githooks) ;;
+    "") common="$(cd "$target" && cd "$(git rev-parse --git-common-dir)" && pwd)"
+        for h in "$common"/hooks/*; do
+          case "$h" in *.sample) continue ;; esac
+          [ ! -f "$h" ] || off "$h"
+        done ;;
+    *) off "$old (core.hooksPath)" ;;
+  esac
+fi
 if [ "$dry" = 0 ]; then
   [ -d "$target/.githooks" ] && chmod +x "$target"/.githooks/* 2>/dev/null || true
   git -C "$target" config core.hooksPath .githooks
