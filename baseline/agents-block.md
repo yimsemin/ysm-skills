@@ -1,6 +1,6 @@
 ## 공통 작업 규칙
 
-이 구역은 여러 프로젝트가 같이 쓰는 공통 작업 규칙이며 자동으로 갱신된다. 직접 고치지 말고 바꾸려면 출처 저장소(https://github.com/yimsemin/ysm-skills)에 요청한다. 프로젝트 고유 규칙은 이 구역 밖에 쓴다. 충돌하면 공통 규칙을 따르는 것이 기본이고, 프로젝트 규칙에 유지할 만한 특별한 이점이 있으면 프로젝트 규칙을 유지하며, 이점이 분명하지 않거나 애매하면 사용자에게 묻는다. 단 Git 구역은 예외 선언 항목 외에는 프로젝트 규칙이 대체하지 못한다. 소통·판단·검증 같은 공통 진행 규칙은 각자 컴퓨터의 에이전트 전역 지침이 맡는다. 이 구역의 "사용자"는 지금 에이전트에게 지시하는 사람이다. 이 구역이 말하는 스킬은 설치되어 있으면 쓰고, 없으면 같은 일을 직접 한다.
+이 구역은 여러 프로젝트가 같이 쓰는 공통 작업 규칙이며 자동으로 갱신된다. 직접 고치지 말고 바꾸려면 출처 저장소(https://github.com/yimsemin/ysm-skills)에 요청한다. 프로젝트 고유 규칙은 이 구역 밖에 쓴다. 충돌하면 공통 규칙을 따르는 것이 기본이고, 프로젝트 규칙에 유지할 만한 특별한 이점이 있으면 프로젝트 규칙을 유지하며, 이점이 분명하지 않거나 애매하면 사용자에게 묻는다. 단 Git 구역은 예외 선언 항목 외에는 프로젝트 규칙이 대체하지 못한다. 소통·판단·검증 같은 공통 진행 규칙은 각자 컴퓨터의 에이전트 전역 지침이 맡는다. 이 구역의 "사용자"는 지금 에이전트에게 지시하는 사람이다. 이 구역이 말하는 스킬은 설치되어 있으면 쓰고, 없으면 이 구역의 규칙에 따라 직접 한다. 스킬의 절차를 프로젝트 문서에 옮겨 적지 않는다.
 
 ### 문서
 
@@ -39,17 +39,17 @@ UI·CLI·오류 안내처럼 사용자나 에이전트에게 보이는 문구가
 
 - stage·commit·push·PR·merge는 사용자가 요청할 때만 한다. 승인은 그 요청에만 유효하고 다음 작업으로 이어지지 않는다. 이 파일의 프로젝트 구역이 명시한 상시 승인만 예외다.
 - Git 규칙은 프로젝트 규칙이 대체하지 못한다. 프로젝트가 바꿀 수 있는 것은 이 구역이 "선언"이라고 적은 항목뿐이고, 프로젝트 구역에 한 줄씩 쓴다.
-- 보호 브랜치는 `main`과 있으면 `develop`이다. 여기에는 직접 커밋·푸시하지 않고, 작업 브랜치(`feat/` `fix/` `docs/` `chore/` + kebab-case)에서 PR로 병합한다. 첫 커밋만 `main`에 직접 한다. 병렬 작업은 브랜치마다 `git worktree`로 분리한다. `.githooks/pre-commit`·`pre-push`가 막는다(프로젝트 전용 푸시 검사는 훅을 고치지 말고 `.githooks/pre-push.local`에 둔다).
+- 보호 브랜치는 `main`과 있으면 `develop`이다. 여기에는 직접 커밋·푸시하지 않고, 작업 브랜치(`feat/` `fix/` `docs/` `chore/` `ci/` + kebab-case)에서 PR로 병합한다. 첫 커밋만 `main`에 직접 한다. 병렬 작업은 브랜치마다 `git worktree`로 분리한다. `.githooks/pre-commit`·`pre-push`가 막는다(프로젝트 전용 푸시 검사는 훅을 고치지 말고 `.githooks/pre-push.local`에 둔다).
 - 작업 브랜치는 PR을 보낼 저장소의 대상 브랜치 최신 상태에서 만들고, PR을 열거나 갱신하기 전에 대상 브랜치의 최신 내용을 반영해 검증한다. 사용자의 것이 아닌 브랜치에는 사용자가 요청하지 않으면 푸시하지 않는다.
 - 선언 `main` 직행: 쓰기 권한자가 한 명인 저장소만 쓸 수 있다. 프로젝트 구역에 `<!-- ysm:direct-main -->` 줄을 쓰고 이유를 옆에 적으면 `main`에 직접 커밋·푸시할 수 있다. `develop`과 force push·삭제는 그대로 막힌다.
-- 선언 커밋 제목 언어: 모든 프로젝트가 프로젝트 구역에 `<!-- ysm:commit-lang=ko -->` 또는 `<!-- ysm:commit-lang=en -->` 줄을 쓰고, `.githooks/commit-msg`가 검사한다.
+- 선언 커밋 제목 언어: 모든 프로젝트가 프로젝트 구역에 `<!-- ysm:commit-lang=ko -->` 또는 `<!-- ysm:commit-lang=en -->` 줄을 쓰고, `.githooks/commit-msg`가 검사한다. Dependabot·GitHub Actions 같은 봇이 만든 커밋과 PR의 제목은 언어 선언의 예외다.
 - force push, 푸시한 이력의 수정, 브랜치·태그 강제 삭제, 공유 브랜치의 `reset --hard`는 사용자가 그 대화에서 직접 요청했을 때만 한다. 보호 브랜치와 태그에는 `YSM_ALLOW_FORCE=1`을 붙여야 훅을 통과한다. 이미 푸시한 작업 브랜치의 재작성은 `--force-with-lease`로만 한다. 푸시 전 로컬 커밋의 amend·fixup 정리는 이력 재작성이 아니다. `--no-verify`로 훅을 우회하지 않는다.
 - 커밋은 의미·작업 단위 하나씩 만든다. 같은 목적의 후속 수정(오타·누락·리뷰 반영)은 새 커밋으로 쌓지 말고 푸시 전에 amend·fixup으로 합쳐 원격 이력을 깔끔하게 유지한다.
 - `develop`은 아래 순서로 판단한다. 1) Cloudflare Pages로 배포하면 둔다. 2) 사용자가 요청하면 둔다. 3) 그 외에는 두지 않고 `main`만 쓴다. 버전·릴리스 여부는 기준이 아니다. `develop`을 두면 이유를 프로젝트 구역에 한 줄 쓰고, 작업 브랜치는 `develop`에서 따서 `develop`으로 PR하며(미리보기), `main`은 릴리스 PR(`develop` → `main`)로만 갱신한다(정식).
 - 병합 방식: `develop`이 없으면 squash만 쓴다. 있으면 작업 브랜치 → `develop`은 squash, `develop` → `main` 릴리스는 merge commit이다. rebase 병합은 쓰지 않는다. squash 커밋의 메시지는 PR 제목과 본문이다. 병합 요청은 릴리스를 뜻하지 않는다.
 - 릴리스 병합 커밋 때문에 `develop`이 `main`보다 뒤처져 보여도 맞추지 않는다. `main`→`develop` 동기화 PR은 병합 커밋을 다시 만들어 뒤처짐이 반복되므로 만들지 않는다. `main`에 `develop`을 거치지 않은 커밋이 생긴 경우에만 그 PR로 되병합한다.
 - 병합과 릴리스는 별개다. 병합할 때마다 CHANGELOG의 `[Unreleased]`에 쌓아 두고, 버전은 사용자가 올리라고 지시한 시점에만 올린다. 릴리스 한 번에 매니페스트 버전·CHANGELOG·annotated 태그 `vX.Y.Z`·GitHub Release를 함께 만든다(스킬 `release-project`). 버전을 쓰지 않는 프로젝트에는 태그·CHANGELOG·Release를 두지 않는다.
-- 커밋 제목은 `<type>(<선택 scope>): <요약>`이다. type은 `feat` `fix` `perf` `refactor` `docs` `test` `build` `ci` `chore` `style` `revert`, 72자 이내, 끝에 마침표 없음. 형식과 언어는 `.githooks/commit-msg`가 검사한다. 이유가 필요하면 본문에 쓴다.
+- 커밋 제목은 `<type>(<선택 scope>): <요약>`이다. type은 `feat` `fix` `perf` `refactor` `docs` `test` `build` `ci` `chore` `style` `revert`, 72자 이내, 끝에 마침표 없음. 호환을 깨는 변경은 콜론 앞에 `!`를 붙인다(`feat!:`). 형식과 언어는 `.githooks/commit-msg`가 검사한다. GitHub에서 병합할 때는 훅이 실행되지 않으므로 병합 전에 PR 제목을 확인한다. 이유가 필요하면 본문에 쓴다.
 - PR 본문은 요약(무엇을·왜), 확인한 방법(실제 실행한 것만), 남은 결정 순서로 짧게 쓴다(`.github/pull_request_template.md`).
 - 커밋 메시지와 PR 본문에 AI 생성 표식이나 co-author 트레일러(`Co-Authored-By: Claude …`, `🤖 Generated with …` 등)를 넣지 않는다. 커밋은 훅이, PR 본문 생성은 `.claude/settings.json`의 `attribution` 설정이 막고, PR을 만든 뒤 본문을 한 번 확인한다.
 - 작업이 끝난 사용자의 브랜치는 로컬·원격 모두 지운다(`main`·`develop` 같은 장기 브랜치 제외). 푸시·병합까지 요청받은 작업은 로컬과 원격이 일치하고 미커밋 변경이 없는 상태로 마친다.

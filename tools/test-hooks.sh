@@ -49,6 +49,11 @@ git rm -q --cached .env; rm .env
 echo "k=ghp_$(printf 'a%.0s' $(seq 1 30))" > s.txt; git add s.txt
 expect 1 "비밀값 문자열 커밋 차단" git commit -q -m "chore: add s"
 git rm -q --cached s.txt; rm s.txt
+git config diff.broken.textconv false
+echo '*.bin diff=broken' > .git/info/attributes
+echo "k=ghp_$(printf 'a%.0s' $(seq 1 30))" > s.txt; echo x > b.bin; git add s.txt b.bin
+expect 1 "텍스트 변환이 실패해도 비밀값 커밋 차단" git commit -q -m "chore: add s"
+git rm -q --cached s.txt b.bin; rm s.txt b.bin .git/info/attributes
 
 # pre-push
 expect 0 "작업 브랜치 푸시 허용" git push -q origin feat/x

@@ -56,7 +56,12 @@ for rel in $(list managed); do
   src="$here/managed/$rel"; dst="$target/$rel"
   if [ ! -e "$dst" ]; then echo "CREATED $rel"; copy "$src" "$dst"
   elif cmp -s "$src" "$dst"; then echo "SAME $rel"
-  elif clean "$rel"; then echo "UPDATED $rel"; copy "$src" "$dst"
+  elif clean "$rel"; then
+    echo "UPDATED $rel"
+    case "$rel" in
+      .githooks/*) echo "INFO $rel: 교체되는 훅에 프로젝트 전용 검사가 있었는지 이전 내용(git show HEAD:$rel)과 비교한다. 전용 푸시 검사는 .githooks/pre-push.local 로 옮긴다" ;;
+    esac
+    copy "$src" "$dst"
   else echo "DIFFERS $rel (관리 파일인데 커밋되지 않은 변경이 있다)"
   fi
 done
