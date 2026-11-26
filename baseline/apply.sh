@@ -34,7 +34,12 @@ if [ "$check" = 1 ]; then
   [ -n "$have" ] || { echo "UNKNOWN 적용 기록(rev)이 없다. apply.sh로 적용하면 기록된다"; exit 1; }
   stale=""
   [ "$have" = "$rev" ] || stale="AGENTS.md 구역"
-  for rel in $(list managed); do cmp -s "$here/managed/$rel" "$target/$rel" || stale="${stale:+$stale, }$rel"; done
+  for rel in $(list managed); do
+    cmp -s "$here/managed/$rel" "$target/$rel" || stale="${stale:+$stale, }$rel"
+    case "$rel" in .githooks/*)
+      case "$(git -C "$target" ls-files -s -- "$rel" 2>/dev/null)" in 100644*) stale="${stale:+$stale, }$rel 실행 권한" ;; esac ;;
+    esac
+  done
   [ -z "$stale" ] && { echo "CURRENT"; exit 0; }
   echo "STALE $stale. 갱신하려면 apply.sh를 실행한다"; exit 1
 fi
@@ -125,6 +130,21 @@ if [ "$dry" = 0 ]; then
   [ -d "$target/.githooks" ] && chmod +x "$target"/.githooks/* 2>/dev/null || true
   git -C "$target" config core.hooksPath .githooks
 fi
+# git에 실행 권한(100755) 없이 기록된 훅은 macOS·Linux에서 실행되지 않는다. core.filemode=false(Windows)에서는
+# chmod가 git에 남지 않으므로 인덱스에 직접 기록한다. 이미 추적 중인 파일은 권한만 바꾸고 내용은 스테이지하지 않는다.
+filemode="$(git -C "$target" config --bool core.filemode 2>/dev/null || true)"
+for rel in $(list managed); do
+  case "$rel" in .githooks/*) ;; *) continue ;; esac
+  entry="$(git -C "$target" ls-files -s -- "$rel" 2>/dev/null || true)"
+  case "$entry" in
+    100644*) oid="$(printf '%s' "$entry" | cut -d' ' -f2)" ;;
+    "") [ "$filemode" = false ] && [ "$dry" = 0 ] && [ -f "$target/$rel" ] || continue
+        oid="$(git -C "$target" hash-object -w --path="$rel" -- "$rel")" ;;
+    *) continue ;;
+  esac
+  [ "$dry" = 1 ] || git -C "$target" update-index --add --cacheinfo "100755,$oid,$rel"
+  echo "INFO $rel: 실행 권한을 git 인덱스에 기록한다(스테이지됨). 커밋해야 다른 컴퓨터에 전달된다"
+done
 if [ "$noreply" = 1 ]; then
   login="$(gh api user -q .login 2>/dev/null || true)"
   uid="$(gh api user -q .id 2>/dev/null || true)"

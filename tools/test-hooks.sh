@@ -1,5 +1,6 @@
 #!/bin/sh
-# 베이스라인 훅(baseline/managed/.githooks)이 막아야 할 것을 막고 허용할 것을 허용하는지 임시 저장소에서 확인한다.
+# 베이스라인 훅(baseline/managed/.githooks)이 막아야 할 것을 막고 허용할 것을 허용하는지,
+# apply.sh가 훅을 실행 가능하게 설치하는지 임시 저장소에서 확인한다.
 # 사용: sh tools/test-hooks.sh   (실패가 있으면 종료 코드 1)
 set -u
 root="$(cd "$(dirname "$0")/.." && pwd)"
@@ -75,6 +76,22 @@ git switch -q -c chore/tag-move; c 9 "chore: after tag"
 git tag -f -a v1 -m v1 HEAD >/dev/null
 expect 1 "태그 이동 차단" git push -q -f origin v1
 expect 1 "main 삭제 차단" git push -q origin :main
+
+# apply.sh: 실행 권한이 커밋에 남아야 macOS·Linux에서 훅이 실행된다. core.filemode=false는 Windows 동작이다.
+modes() { git -C "$tmp/p" ls-files -s -- .githooks | cut -c1-6 | tr '\n' ' '; }
+all_exec="100755 100755 100755 "
+git init -q -b main "$tmp/p"
+git -C "$tmp/p" config core.filemode false
+sh "$root/baseline/apply.sh" "$tmp/p" >/dev/null
+git -C "$tmp/p" add -A
+[ "$(modes)" = "$all_exec" ] && pass "새로 적용한 훅은 실행 권한으로 기록" || bad "새로 적용한 훅은 실행 권한으로 기록"
+for h in "$tmp"/p/.githooks/*; do git -C "$tmp/p" update-index --chmod=-x ".githooks/${h##*/}"; done
+expect 1 "--check는 실행 권한 없는 훅을 STALE로 판단" sh "$root/baseline/apply.sh" --check "$tmp/p"
+echo '# local edit' >> "$tmp/p/.githooks/pre-push"
+before="$(git -C "$tmp/p" ls-files -s -- .githooks | cut -d' ' -f2)"
+sh "$root/baseline/apply.sh" "$tmp/p" >/dev/null
+[ "$(modes)" = "$all_exec" ] && pass "기존 훅의 실행 권한 복구" || bad "기존 훅의 실행 권한 복구"
+[ "$(git -C "$tmp/p" ls-files -s -- .githooks | cut -d' ' -f2)" = "$before" ] && pass "권한 복구는 내용 변경을 스테이지하지 않음" || bad "권한 복구는 내용 변경을 스테이지하지 않음"
 
 [ "$fail" = 0 ] && echo "OK"
 exit "$fail"

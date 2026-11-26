@@ -15,7 +15,7 @@ sh baseline/apply.sh --dry-run <폴더>      # 베이스라인 적용 미리보�
 sh baseline/apply.sh --check <폴더>        # 대상 프로젝트의 공통 규칙이 낡았는지(CURRENT/STALE/UNKNOWN)
 sh global/apply-global.sh --check          # 이 컴퓨터의 전역 지침 상태
 sh baseline/repo-settings.sh <소유자/저장소>   # GitHub 병합 방식·브랜치 보호·보안 설정 점검(--apply로 맞춤)
-sh tools/test-hooks.sh                     # 훅 회귀 테스트(임시 저장소에서 차단·허용 확인)
+sh tools/test-hooks.sh                     # 훅 회귀 테스트(임시 저장소에서 차단·허용, 실행 권한 설치 확인)
 ```
 
 ## 작업 방식
