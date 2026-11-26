@@ -6,6 +6,7 @@
 #   보호 브랜치  main(있으면 develop): PR 필수, 관리자 포함, force push·삭제 금지
 #               AGENTS.md에 `<!-- ysm:direct-main -->`가 있으면 main의 PR 필수는 빼고 나머지는 같다
 #               이미 걸려 있는 필수 상태 확인(required_status_checks)은 그대로 보존한다
+#   쓰기 권한자  여럿이면 `ysm:direct-main` 선언은 DIFFERS이고 main도 PR 필수다. 보호를 걸 수 없으면 인원을 알린다
 #   브랜치 자동 삭제  끔(develop 같은 장기 브랜치가 릴리스 PR 병합 때 지워지지 않게. 작업 브랜치 정리는 에이전트가 한다)
 #   기본 브랜치  main(다르면 INFO만. 바꾸기 전에 main에 필요한 파일이 있는지 사람이 확인한다)
 #   보안  Dependabot 보안 알림 켬. 활성 저장소(보관 안 됨, 1년 안에 푸시)는 보안 업데이트도 켬
@@ -29,6 +30,18 @@ has_develop=false
 gh api "repos/$repo/branches/develop" >/dev/null 2>&1 && has_develop=true
 direct_main=false
 gh api -H "Accept: application/vnd.github.raw" "repos/$repo/contents/AGENTS.md" 2>/dev/null | grep -q '^<!-- ysm:direct-main -->' && direct_main=true
+# 쓰기 권한자 수(소유자 포함). 조회하지 못하면 0
+if logins="$(gh api --paginate "repos/$repo/collaborators?per_page=100" --jq '.[] | select(.permissions.push) | .login' 2>/dev/null)"; then
+  writers="$(printf '%s
+' "$logins" | grep -c .)" || writers=0
+else
+  writers=0
+  echo "INFO 쓰기 권한자 조회 실패"
+fi
+if [ "$writers" -gt 1 ] && [ "$direct_main" = true ]; then
+  echo "DIFFERS ysm:direct-main 선언: 쓰기 권한자가 ${writers}명이다. AGENTS.md에서 선언을 지운다"
+  direct_main=false
+fi
 
 # 1) 병합 방식
 want_mc="$has_develop"
@@ -84,7 +97,10 @@ for b in $branches; do
   [ "$b" = main ] && [ "$direct_main" = true ] && need_pr=false
   cur="$(gh api "repos/$repo/branches/$b/protection" --jq '[.enforce_admins.enabled, .allow_force_pushes.enabled, .allow_deletions.enabled, (.required_pull_request_reviews != null)] | @tsv' 2>&1 || true)"
   case "$cur" in
-    *"Upgrade to GitHub Pro"*) echo "INFO $b 보호: 무료 플랜의 비공개 저장소라 걸 수 없다(로컬 훅만 작동)"; continue ;;
+    *"Upgrade to GitHub Pro"*)
+      echo "INFO $b 보호: 무료 플랜의 비공개 저장소라 걸 수 없다(로컬 훅만 작동)"
+      [ "$writers" -gt 1 ] && echo "INFO $b: 쓰기 권한자 ${writers}명의 병합과 직접 변경을 GitHub가 막지 못한다"
+      continue ;;
     *"Branch not protected"*) cur="none" ;;
     true*|false*) ;;
     *) echo "INFO $b 보호: 조회 실패 - $(printf '%s' "$cur" | head -1 | cut -c1-120)"; continue ;;

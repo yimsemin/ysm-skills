@@ -35,6 +35,8 @@ fi
 - **프로젝트 구역과의 충돌**: 베이스라인과 겹치거나 모순되는 마커 밖 문장, 프로젝트 구역의 `ysm:commit-lang` 선언 유무(없으면 최근 커밋 제목으로 언어를 추정해 제안).
 - **GitHub 설정**(admin 권한일 때): `sh "$src/baseline/repo-settings.sh"`(점검만 한다)의 `DIFFERS`와 `INFO`. 기본 브랜치가 `main`이 아니면 바꾸기 전에 `main`에 필요한 파일(Dependabot 설정, 예약 워크플로)이 있는지 확인할 항목으로 둔다.
 - **Dependabot 설정**: `.github/dependabot.yml`이 `$src/baseline/dependabot.yml` 표준과 다른 점(주기, 묶기, PR 한도, 접두사, `target-branch`, 매니페스트에 없는 항목). 매니페스트나 워크플로가 있는데 설정이 없으면 추가 대상이다. `develop`을 쓰면 설정이 릴리스 뒤에야 적용된다는 점도 보고한다.
+- **훅 활성화**: 새 클론의 설치 절차가 훅 설정을 건너뛰는지(`npm install --ignore-scripts`처럼 설정 단계를 생략하는 명령).
+- **기여 안내**: `CONTRIBUTING.md`가 외부 기여자용 최소 안내인지, `AGENTS.md`와 중복·모순이 있는지. 계정의 `.github` 저장소에 기본 파일이 있으면 프로젝트 파일이 필요한지도 본다(프로젝트 파일이 있으면 기본 파일은 적용되지 않는다).
 - **미커밋 변경**: 있으면 그 파일은 건드리지 않는다.
 
 처음 적용일 때만 더 본다:
