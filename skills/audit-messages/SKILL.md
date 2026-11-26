@@ -1,6 +1,6 @@
 ---
 name: audit-messages
-description: Audit and fix user-facing text (UI, CLI, errors) and agent-facing text (prompts, CLI guidance, instruction files) so wording agrees with itself and with actual behavior - wrong commands, nonexistent button names, contradictions, mixed languages, internal terms, inconsistent terminology, filler - and move error handling from message text to error kinds and message catalogs. Use when the user asks to check or clean up messages, wording, error text or i18n, or before adding a language. 사용자 문구·오류 문구·다국어(i18n) 점검, 용어 통일, 문구 구조 개선.
+description: Audit and fix user-facing text (UI, CLI, errors) and agent-facing text (prompts, CLI guidance, instruction files) so wording agrees with itself and with actual behavior - wrong commands, nonexistent button names, contradictions, mixed languages, internal terms, inconsistent terminology, filler - and move error handling from message text to error kinds, adding a message catalog only when the project needs one. Use when the user asks to check or clean up messages, wording, error text or i18n, or before adding a language. 사용자 문구·오류 문구·다국어(i18n) 점검, 용어 통일, 문구 구조 개선.
 ---
 
 # audit-messages
@@ -10,6 +10,8 @@ description: Audit and fix user-facing text (UI, CLI, errors) and agent-facing t
 ## 1. 적용 대상
 
 - 사용자에게 보이는 문구(UI·CLI·오류·안내)나 에이전트에게 보내는 문구(요청문·안내 출력·지침 파일)가 있는 저장소. 단일 언어도 해당한다. 다국어는 6절을 더 본다.
+- 개발자용 로그·진단 문구와 테스트의 문자열은 결함으로 잡지 않는다. 지침 파일은 실제 동작과 맞는지만 보고 카탈로그 대상으로 삼지 않는다.
+- **카탈로그가 필요한 저장소**는 이미 카탈로그가 있거나, 두 번째 언어가 있거나 추가가 확정됐거나, 같은 문구를 여러 곳에서 반복하다 어긋난 곳이 있는 저장소다. 그 외에는 코드에 직접 쓴 문구가 결함이 아니다.
 - 문구가 몇 개 안 되는 스크립트는 전수 나열(3-1)과 결함 표(4절)만 쓴다. 구조 개선(5절)은 하지 않는다.
 - 처음 쓰는 저장소는 7절 순서를 따른다. 점검만 하고 보고하기 전에는 수정하지 않는다.
 
@@ -25,7 +27,7 @@ description: Audit and fix user-facing text (UI, CLI, errors) and agent-facing t
 순서대로 한다.
 
 1. **전수 나열**: 키·언어별 문구를 한 파일에 나란히 덤프해 통째로 읽는다. 카탈로그 형식에 맞는 한 줄짜리 스크립트로 만든다. 카탈로그가 없으면 코드에서 문자열을 뽑아 나열한다.
-2. **정적 점검**: 코드에 박힌 사용자용 문자열(`scripts/scan-hardcoded.sh`로 후보를 찾는다), 언어 간 누락 키, 안 쓰는 키, 문구로 오류 종류를 판별하는 정규식·`includes`.
+2. **정적 점검**: 문구로 오류 종류를 판별하는 정규식·`includes`. 카탈로그가 필요한 저장소는 카탈로그 밖의 사용자 문구, 언어 간 누락 키, 안 쓰는 키도 본다. `scripts/scan-hardcoded.sh`의 출력은 후보일 뿐이며 줄 수를 결함 수로 보고하지 않는다.
 3. **실제 화면 점검**: 모의 서버·샘플 데이터로 모든 언어를 처음부터 끝까지 실행한다. 문구는 앞뒤 화면 안에서만 맞고 틀림을 알 수 있다. 실행할 수 없으면 확인하지 못한 것으로 보고한다.
 4. **에이전트 쪽 점검**: 요청문, CLI 안내 출력, 지침 파일을 같은 기준으로 본다. 실제 명령·경로·화면과 대조한다.
 5. **분류·우선순위**: 4절 유형으로 분류한다. 사용자가 잘못된 행동을 하게 되는 것(틀린 명령, 없는 버튼, 모순)부터 고친다.
@@ -39,7 +41,7 @@ description: Audit and fix user-facing text (UI, CLI, errors) and agent-facing t
 | 동작과 모순 | 문구가 말한 것과 결과가 다르다 | 3-3 실제 실행 | 동작이 의도라면 문구를, 문구가 의도라면 동작을 고친다 | "자동 저장" 안내인데 수동 |
 | 조합형 문구 깨짐 | 조각을 이어 붙인 문장이 어색하거나 언어에 따라 깨진다 | 변수·조각을 바꿔 렌더 | 변수가 든 완성 문장 하나로 바꾼다 | "{n} 개" + "파일" 이어 붙임 |
 | 언어 간 정보 불균형 | 한 언어에만 있는 경고·단계 | 전수 나열을 나란히 비교 | 대등하게 맞춘다 | 영어에만 있는 주의 문장 |
-| 언어 혼입 | 한 언어 문구에 다른 언어 단어 | 카탈로그 검사(5-③) | 번역하거나, 고유명사면 허용 목록에 둔다 | 한국어 문장 속 영어 일반 명사 |
+| 언어 혼입 | 한 언어 문구에 다른 언어 단어 | 3-1 전수 나열 | 번역하거나, 고유명사면 허용 목록에 둔다 | 한국어 문장 속 영어 일반 명사 |
 | 내부 용어 노출 | 사용자가 모르는 코드·내부 이름 | 금지어 검사 | 사용자 용어로 바꾼다 | 함수명·상태 코드 |
 | 용어 흐트러짐 | 같은 것을 다르게 부르거나 한 단어가 두 뜻 | 용어집과 대조 | 용어집에 정하고 일괄 교체 | 앱 이름 표기 두 가지 |
 | 사족·중복 | 화면이 이미 말한 것의 반복, 일반론 | 화면 안에서 읽기 | 지운다 | 제목과 같은 첫 문장 |
@@ -49,15 +51,15 @@ description: Audit and fix user-facing text (UI, CLI, errors) and agent-facing t
 
 문구만 고치면 같은 결함이 다시 생기는 경우에만 한다. 새 코드는 처음부터 베이스라인 "사용자 문구" 규칙을 따르므로, 이 절은 그 규칙을 어긴 기존 코드를 고치는 방법이다.
 
-- **① 오류를 문구가 아니라 종류 코드로 구분한다.** 오류 처리·재시도·화면 분기가 문장 정규식이나 `includes`에 걸려 있으면 필수다. 문구 수정이 동작을 깨는 위험이 사라진다. 비용은 오류를 던지는 곳마다 종류를 붙이는 일이다. 종류 목록은 프로젝트 `docs/`에 둔다.
+- **① 오류를 문구가 아니라 종류 코드로 구분한다.** 오류 처리·재시도·화면 분기가 문장 정규식이나 `includes`에 걸려 있으면 필수다. 문구 수정이 동작을 깨는 위험이 사라진다. 비용은 오류를 던지는 곳마다 종류를 붙이는 일이다.
 - **② 서버 오류 문구를 번역 키로 만든다.** 사용자가 실제로 볼 수 있는 문구만 대상이다. 개발자 진단 문구·로그는 제외한다. 서버가 언어별 문구를 모른 채 키와 변수만 보내고 화면이 번역한다. 다국어가 없으면 하지 않는다.
-- **③ 카탈로그 검사를 둔다.** 키·변수의 언어 간 일치, 금지어, 언어 혼입을 테스트나 검증 스크립트로 검사한다. 금지어는 사용자 문구에만 적용하고 에이전트용 문구는 제외한다. 재발 방지가 목적이므로 1~2절의 수정이 끝난 뒤에 둔다.
+- **③ 카탈로그 검사를 둔다.** 카탈로그가 있을 때만 한다. 키·변수의 언어 간 일치, 금지어, 언어 혼입을 테스트나 검증 스크립트로 검사한다. 금지어는 사용자 문구에만 적용하고 에이전트용 문구는 제외한다. 재발 방지가 목적이므로 1~2절의 수정이 끝난 뒤에 둔다.
 - **키 일괄 리네임**: 문장 형태 키가 유지보수를 해칠 때만 한다. 문구는 그대로 두는 순수 리네임으로 하고, 리네임 전후 덤프가 같은지 확인한다. 리네임 스크립트는 카탈로그 형식마다 달라서 이 스킬에 두지 않는다.
 
 ## 6. 문구 규칙
 
-- **용어집**: `templates/glossary.md` 양식으로 `docs/`에 한 파일을 둔다. 용어마다 쓸 말, 쓰지 않을 말, 한 줄 정의를 적는다.
-- **버튼·메뉴 인용**: 사용자가 실제로 보는 이름만 따옴표로 인용하고, 카탈로그에서 같은 키를 참조해 글자가 어긋나지 않게 한다.
+- **용어집**: 헷갈리거나 어긋난 적이 있는 용어가 있으면 `templates/glossary.md` 양식으로 `docs/`에 한 파일을 둔다. 그런 용어마다 쓸 말, 쓰지 않을 말, 한 줄 정의를 적는다.
+- **버튼·메뉴 인용**: 사용자가 실제로 보는 이름만 따옴표로 인용한다. 카탈로그가 있으면 같은 키를 참조해 글자가 어긋나지 않게 한다.
 - **번역 대등**: 한 키의 모든 언어는 같은 정보·같은 경고를 담는다. 직역이 어색하면 뜻을 맞추되 정보량은 같게 한다. 변수 이름과 개수가 같아야 한다.
 - **에이전트용 문구**: 언어는 받는 에이전트 기준으로 정하고, 명령·경로·식별자는 원문을 쓴다.
 
@@ -66,7 +68,7 @@ description: Audit and fix user-facing text (UI, CLI, errors) and agent-facing t
 1. **점검만 하고 보고한다.** 3절을 모두 실행하고 4절 유형별 표로 보고한다. 이 단계에서는 파일을 바꾸지 않는다.
 2. **문구를 고친다.** 우선순위대로, 유형별로 묶어 고친다.
 3. **구조를 개선한다.** 1단계에서 문장 정규식 판별이 발견된 경우만 5-①을, 다국어이고 서버 문구가 있으면 5-②를 한다.
-4. **카탈로그 검사로 재발을 막는다**(5-③).
+4. **카탈로그가 있으면 검사로 재발을 막는다**(5-③).
 
 ## 8. 검증과 커밋
 
