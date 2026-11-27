@@ -50,7 +50,7 @@ sh "$src/baseline/apply.sh" --noreply-email .
 
 ## 4. 프로젝트 내용을 채운다
 
-- `AGENTS.md`의 `{{INTENT}}`, `{{USERS}}`, `{{SUCCESS}}`, `{{NON_GOALS}}`에 1단계 내용을 쓴다. `{{COMMIT_LANG}}`에 커밋 제목 언어 `ko` 또는 `en`을 쓴다(사용자의 언어에 맞추고, 애매하면 묻는다). `develop`은 Cloudflare Pages로 배포하거나 사용자가 요청한 경우에만 두고, 그렇지 않으면 만들지 않는다. `{{RUN_AND_VERIFY}}`는 실제 명령이 정해진 만큼만 쓰고, 아직 없으면 "아직 없음"이라고 쓴다. 지어내지 않는다.
+- `AGENTS.md`의 `{{INTENT}}`, `{{USERS}}`, `{{SUCCESS}}`, `{{NON_GOALS}}`에 1단계 내용을 쓴다. `{{COMMIT_LANG}}`에 커밋 제목 언어 `ko` 또는 `en`을 쓴다(사용자의 언어에 맞추고, 애매하면 묻는다). `develop`을 둘지는 베이스라인 Git 구역의 기준으로 정한다. `{{RUN_AND_VERIFY}}`는 실제 명령이 정해진 만큼만 쓰고, 아직 없으면 "아직 없음"이라고 쓴다. 지어내지 않는다.
 - `ysm-baseline` 마커 사이는 수정하지 않는다.
 - 폴더에 있던 기획·인수인계 같은 입력 문서는 `docs/`로 옮기고 `AGENTS.md`에서는 현재 결정만 요약해 링크한다.
 - `README.md`가 없으면 의도 한 단락과 실행 방법만 담은 짧은 README를 만든다.
