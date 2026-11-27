@@ -105,7 +105,7 @@ yimsemin/ysm-skills 저장소를 보고 베이스라인 업데이트 해줘     
 - 베이스라인: 훅과 PR 템플릿(관리 파일)은 프로젝트가 고치지 않는 파일이라 정본으로 교체한다. 커밋되지 않은 변경이 있으면 교체하지 않고 알린다. 프로젝트 전용 푸시 검사는 `.githooks/pre-push.local`에 둔다. 훅이 macOS·Linux에서도 실행되도록 필요하면 실행 권한을 git 인덱스에 기록하며, 이때 해당 파일이 스테이지된다. 나머지 설정 파일(시드 파일)은 없을 때만 만들고, 내용이 다르면 에이전트가 읽어서 병합한다(`.gitignore`만 빠진 줄을 추가한다). 모두 사용자에게 보고하고 승인받은 뒤에 적용한다.
 - 전역 지침: 승인한 뒤에만 쓰고, 쓰기 전에 기존 파일을 `.bak-시각`으로 백업한다. `settings.json`은 필요한 확인 규칙만 추가하고 기존 설정은 그대로 둔다. 마커가 없는 기존 파일에는 구역을 맨 위에 추가한다.
 - 강제되는 것: 베이스라인의 훅(커밋 메시지 형식·언어, 비밀값 검사, noreply 커밋 이메일(설정한 프로젝트만), 보호 브랜치 직접 커밋·푸시·force push)은 설치되면 실제로 막는다. GitHub 쪽 병합 방식·브랜치 보호·보안 설정은 `baseline/repo-settings.sh`가 점검하고(`--apply`로 맞춤), 비공개 저장소는 무료 플랜이라 훅만 작동한다. 이때 쓰기 권한을 받은 사람은 누구나 병합과 `main` 변경을 할 수 있고, 점검 스크립트가 그 인원을 알린다. 나머지 규칙은 에이전트가 따르는 지침이다.
-- 프로젝트가 바꿀 수 있는 Git 규칙은 프로젝트 구역의 선언뿐이다: `main` 직행(쓰기 권한자가 한 명인 저장소만), 커밋 제목 언어.
+- 프로젝트가 바꿀 수 있는 Git 규칙은 프로젝트 구역의 선언뿐이다: `main` 직행(쓰기 권한자가 한 명인 저장소만), 커밋 제목 언어, 상시 승인(요청 없이 해도 되는 Git 작업).
 - 커밋 이메일을 GitHub noreply 주소로 제한하는 검사는 선택이며, 켠 사람의 클론에만 적용된다(`apply.sh --noreply-email`).
 
 ### 외부 기여 안내와 이슈 템플릿
@@ -131,6 +131,16 @@ yimsemin/ysm-skills 저장소를 보고 베이스라인 업데이트 해줘     
 ```
 /plugin marketplace add yimsemin/ysm-skills
 /plugin install ysm@ysm-skills
+```
+
+외부 마켓플레이스는 자동 업데이트가 기본으로 꺼져 있다. 갱신하지 않으면 `new-project`·`adopt-project`가 설치 당시의 규칙을 적용할 수 있다.
+
+- 자동: 터미널의 `claude`에서 `/plugin` → Marketplaces → `ysm-skills`의 자동 업데이트를 켠다. `DISABLE_AUTOUPDATER=1`이 설정된 환경은 `~/.claude/settings.json`의 `env`에 `"FORCE_AUTOUPDATE_PLUGINS": "1"`도 넣는다.
+- 수동: 아래 두 명령을 실행한다.
+
+```sh
+claude plugin marketplace update ysm-skills
+claude plugin update ysm@ysm-skills
 ```
 
 ## 라이선스
