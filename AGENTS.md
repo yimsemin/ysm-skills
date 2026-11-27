@@ -23,40 +23,102 @@ sh tools/test-hooks.sh                     # 훅 회귀 테스트(임시 저장�
 - 작업 브랜치 없이 `main`에서 바로 커밋한다(베이스라인의 보호 브랜치 규칙 예외 선언, 쓰기 권한자가 한 명인 저장소). 외부 기여는 포크한 저장소의 PR로 받는다.
 <!-- ysm:direct-main -->
 <!-- ysm:commit-lang=en -->
-- 베이스라인 예외: `CHANGELOG.md`는 두지 않는다(변경 이력은 git 이력). 패키지 매니페스트와 워크플로가 없어 `.github/dependabot.yml`도 두지 않고 GitHub의 Dependabot 보안 알림만 켜 둔다. 매니페스트나 워크플로를 추가하면 `baseline/dependabot.yml`을 복사해 쓴다.
-- 이 저장소는 버전을 쓰지 않아 태그·GitHub Release를 두지 않는다. `.claude-plugin/`의 두 매니페스트에 `version`을 넣지 않는다(값이 있으면 바꾸기 전까지 설치된 플러그인이 갱신되지 않고, 없으면 커밋 SHA로 갱신된다). 베이스라인 구역과 전역 지침 구역의 최신 여부는 버전이 아니라 시작 마커의 `rev`(정본 체크섬)로 판단한다.
+- 패키지 매니페스트와 워크플로가 없어 GitHub의 Dependabot 보안 알림만 켜 둔다.
+- 이 저장소는 버전을 쓰지 않는다. `.claude-plugin/`의 두 매니페스트에 `version`을 넣지 않는다(넣으면 설치된 플러그인이 커밋마다 갱신되지 않는다). 베이스라인·전역 지침 구역의 최신 여부는 시작 마커의 `rev`(정본 체크섬)로 판단한다.
 
-## 구조
+## 파일 구조
+
+- `skills/<name>/SKILL.md`: 플러그인으로 배포해 어느 프로젝트에서나 쓰는 오픈 표준 스킬. 폴더명 = `name`(영문 kebab-case), `description`은 한영 키워드 병기, 본문은 한국어. 로컬 저장소를 가정하지 않고 플러그인 경로(`CLAUDE_PLUGIN_ROOT`)나 임시 폴더에 받은 원격 저장소를 쓴다(스킬마다 동일한 `ysm-locate` 블록). `setup-machine`만은 그 블록 없이 항상 GitHub 최신본을 받는다.
+- `.agents/skills/<name>/SKILL.md`: 이 저장소에서만 쓰는 스킬의 정본(Codex가 읽는 위치). Claude Code는 `.claude/skills/`를 읽으므로 같은 내용을 복사해 두고, 정본을 고친 뒤 `cp -R .agents/skills/. .claude/skills/`로 맞춘다(`validate.sh`가 일치를 검사한다). 명령은 저장소 루트 기준으로 쓴다.
+- `baseline/`: 프로젝트로 **복사**되는 저장소 규칙의 정본. `managed/`는 관리 파일(훅·PR 템플릿, 대상에서 정본으로 교체), `seed/`는 시드 파일(없을 때만 생성, 다르면 병합), `agents-block.md`는 AGENTS.md의 마커 구역에 삽입, `agents-skeleton.md`는 AGENTS.md가 없을 때 만드는 뼈대, `dependabot.yml`은 매니페스트가 있는 프로젝트가 복사해 고쳐 쓰는 표준. `repo-settings.sh`는 GitHub 병합 방식·브랜치 보호·보안 설정을 점검·적용하며 복사되지 않고 스킬이 `$src`에서 실행한다.
+- `global/`: `agents.md`(전역 지침)와 `settings.json`(`gh issue` 쓰기를 항상 확인하게 하는 설정)의 정본. `apply-global.sh`가 `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`의 마커 구역과 `~/.claude/settings.json`에만 쓰고, 승인 없이 쓰지 않는다. `chat-claude.md`(claude.ai)와 `chat-chatgpt.md`(ChatGPT, 1500자 이내)는 계정 설정에 붙여넣는 대화용 지침이며, `agents.md`와 겹치는 줄은 허용하되 바꿀 때 함께 확인한다. 직업·자기소개 같은 개인 칸은 저장소에 두지 않는다.
+- `.claude-plugin/`: Claude Code 마켓플레이스·플러그인 매니페스트.
+- `docs/references.md`: 참고한 외부 자료와 가져온 원칙.
+
+## 저장소 규칙
 
 - 이 저장소를 언급하며 새 프로젝트의 기본 셋팅 요청이 오면 `skills/new-project/SKILL.md`를 따른다. 대상은 사용자가 에이전트를 연 작업 폴더이고 이 저장소의 사본이 아니다.
 - Cloudflare 배포·관리는 이 저장소에서만 한다(API 토큰은 이 저장소 `.env`에만 둔다). 대상 저장소의 Pages 배포를 요청받으면 `.agents/skills/deploy-cloudflare-pages/SKILL.md`를 따른다. 기준의 정본은 `docs/cloudflare-pages.md`이며 이 내용은 이 저장소에만 두고 `baseline/`·`global/`·대상 저장소 문서로 복사하지 않는다.
-- 스킬 이름으로 바꾸는 범위를 구분한다. `*-project` 스킬은 그 프로젝트의 파일·설정만, `*-machine` 스킬(`setup-machine`)은 이 컴퓨터의 전역 파일만 바꾼다. 전역 지침은 사용자가 `setup-machine`을 부를 때만 점검·갱신하고, 다른 스킬은 점검하지 않는다.
-- `skills/<name>/SKILL.md`: 플러그인으로 배포해 어느 프로젝트에서나 쓰는 오픈 표준 스킬. 폴더명 = `name`(영문 kebab-case), `description`은 한영 키워드 병기, 본문은 한국어. 스킬은 이 컴퓨터에 저장소가 있다고 가정하지 않고, 플러그인 경로(`CLAUDE_PLUGIN_ROOT`) 또는 원격 저장소를 임시 폴더로 받아 쓴다(`ysm-locate` 블록, 스킬마다 동일해야 한다). `setup-machine`만은 낡은 플러그인 사본으로 판단하지 않도록 항상 GitHub 최신본을 받으며 `ysm-locate` 블록을 쓰지 않는다.
-- `.agents/skills/<name>/SKILL.md`: 이 저장소에서만 쓰는 스킬의 정본(Codex가 읽는 위치). Claude Code는 `.claude/skills/`를 읽으므로 같은 내용을 복사해 두고, 정본을 고친 뒤 `cp -R .agents/skills/. .claude/skills/`로 맞춘다(`validate.sh`가 일치를 검사한다). 명령은 저장소 루트 기준으로 쓴다.
-- `baseline/`: 프로젝트로 **복사**되는 저장소 규칙의 정본. `managed/`는 관리 파일(훅·PR 템플릿, 대상에서 정본으로 교체), `seed/`는 시드 파일(없을 때만 생성, 다르면 병합), `agents-block.md`는 AGENTS.md의 마커 구역에 삽입, `agents-skeleton.md`는 AGENTS.md가 없을 때 만드는 뼈대, `dependabot.yml`은 매니페스트가 있는 프로젝트가 복사해 고쳐 쓰는 표준. `repo-settings.sh`는 GitHub 병합 방식·브랜치 보호·보안 설정을 점검·적용하며 복사되지 않고 스킬이 `$src`에서 실행한다.
-- `global/`: `agents.md`(전역 지침)와 `settings.json`(`gh issue` 쓰기를 항상 확인하게 하는 설정)의 정본. `apply-global.sh`가 `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`의 마커 구역과 `~/.claude/settings.json`에만 쓰고, 승인 없이 쓰지 않는다. `chat-claude.md`는 claude.ai, `chat-chatgpt.md`는 ChatGPT 계정 설정에 붙여넣는 대화용 지침(ChatGPT 칸 한도 1500자 이내)이며 `agents.md`와 겹치는 줄은 서로 다른 화면용이라 허용하되, 바꿀 때 함께 확인한다. 직업·자기소개 같은 개인 칸은 저장소에 두지 않는다.
+- 스킬 이름으로 바꾸는 범위를 구분한다. `*-project` 스킬은 그 프로젝트의 파일·설정만, `*-machine` 스킬(`setup-machine`)은 이 컴퓨터의 전역 파일만 바꾼다. 전역 지침 점검·갱신은 사용자가 `setup-machine`을 부를 때만 한다.
 - 전역과 베이스라인에 같은 규칙을 두지 않는다. 판단 기준은 "저장소 없이도 성립하는가"이고, 성립하면 전역이다. 어느 쪽을 고치든 겹치는 문장이 없는지 에이전트가 직접 확인한다.
 - 루트의 `.githooks/`, `.claude/`, `.github/`, `.gitignore`, `.editorconfig`, `.gitattributes`, `CLAUDE.md`와 이 파일의 마커 구역은 baseline의 사본이다. 직접 고치지 말고 `baseline/`을 고친 뒤 `sh baseline/apply.sh .`로 갱신한다.
-- `.claude-plugin/`: Claude Code 마켓플레이스·플러그인 매니페스트.
-- `docs/references.md`: 참고한 외부 자료와 가져온 원칙.
-- 이 저장소의 내용에는 회사·개인 전용 정보, 비밀값을 넣지 않는다(공개 저장소다).
+- 공개 저장소이므로 회사 전용 정보는 어디에도 넣지 않는다.
 
-<!-- ysm-baseline:start rev=1597798014 -->
+<!-- ysm-baseline:start rev=681265991 -->
 ## 공통 작업 규칙
 
-이 구역은 여러 프로젝트가 같이 쓰는 공통 작업 규칙이며 자동으로 갱신된다. 직접 고치지 말고 바꾸려면 출처 저장소(https://github.com/yimsemin/ysm-skills)에 요청한다. 프로젝트 고유 규칙은 이 구역 밖에 쓴다. 충돌하면 공통 규칙을 따르는 것이 기본이고, 프로젝트 규칙에 유지할 만한 특별한 이점이 있으면 프로젝트 규칙을 유지하며, 이점이 분명하지 않거나 애매하면 사용자에게 묻는다. 단 Git 구역은 예외 선언 항목 외에는 프로젝트 규칙이 대체하지 못한다. 소통·판단·검증 같은 공통 진행 규칙은 각자 컴퓨터의 에이전트 전역 지침이 맡는다. 이 구역의 "사용자"는 지금 에이전트에게 지시하는 사람이다. 이 구역이 말하는 스킬은 설치되어 있으면 쓰고, 없으면 이 구역의 규칙에 따라 직접 한다. 스킬의 절차를 프로젝트 문서에 옮겨 적지 않는다. `.githooks/`의 `commit-msg`·`pre-commit`·`pre-push`와 `.github/pull_request_template.md`는 출처 저장소가 관리한다. 프로젝트에서는 고치거나 코드·문구 점검 대상으로 삼지 않고, 문제가 있으면 출처 저장소에 요청한다.
+여러 프로젝트가 같이 쓰고 자동으로 갱신되는 구역이다. 직접 고치지 말고 변경은 출처 저장소(https://github.com/yimsemin/ysm-skills)에 요청한다. 프로젝트 고유 규칙은 이 구역 밖에 쓴다. 충돌하면 공통 규칙이 기본이고, 유지할 만한 특별한 이점이 있는 프로젝트 규칙은 유지하며, 애매하면 사용자에게 묻는다(Git 구역은 예외). 소통·판단·검증 같은 공통 진행 규칙은 각자 컴퓨터의 에이전트 전역 지침이 맡는다. 이 구역의 "사용자"는 지금 에이전트에게 지시하는 사람이다. 여기 적힌 스킬은 설치되어 있으면 쓰고, 없으면 이 규칙에 따라 직접 한다. 스킬의 절차를 프로젝트 문서에 옮겨 적지 않는다. `.githooks/`의 `commit-msg`·`pre-commit`·`pre-push`와 `.github/pull_request_template.md`는 출처 저장소가 관리하므로 고치거나 점검하지 않고, 문제는 출처 저장소에 요청한다.
 
-### 점검
+### Git
 
-- 방향이 바뀌거나 큰 변경·커밋 묶음·릴리즈가 끝나면 요청이 없어도 바뀐 범위의 문서(낡은 정보·중복·모순·사족, 스킬 `audit-docs`), 코드(구조·중복·미사용, 스킬 `tidy-code`), 사용자 문구(언어 추가 전에도, 스킬 `audit-messages`)를 점검하고 무엇을 고쳤는지 보고한다.
+#### 승인과 금지
+
+- stage·commit·push·PR·merge는 사용자가 요청할 때만 한다. 승인은 그 요청에만 유효하다(프로젝트 구역에 선언한 상시 승인은 예외).
+- force push, 푸시한 이력의 수정, 브랜치·태그 강제 삭제, 공유 브랜치의 `reset --hard`는 사용자가 그 대화에서 직접 요청했을 때만 한다. 보호 브랜치와 태그에는 `YSM_ALLOW_FORCE=1`을 붙여야 훅을 통과한다. 이미 푸시한 작업 브랜치의 재작성은 `--force-with-lease`로만 한다. 푸시 전 로컬 커밋의 amend·fixup 정리는 이력 재작성이 아니다. `--no-verify`로 훅을 우회하지 않는다.
+
+#### 브랜치
+
+- 보호 브랜치는 `main`과 있으면 `develop`이다. 여기에는 직접 커밋·푸시하지 않고, 작업 브랜치(`feat/` `fix/` `docs/` `chore/` `ci/` + kebab-case)에서 PR로 병합한다. 첫 커밋만 `main`에 직접 한다. 병렬 작업은 브랜치마다 `git worktree`로 분리한다. 프로젝트 전용 푸시 검사는 `.githooks/pre-push.local`에 둔다.
+- 작업 브랜치는 PR을 보낼 저장소의 대상 브랜치 최신 상태에서 만들고, PR을 열거나 갱신하기 전에 대상 브랜치의 최신 내용을 반영해 검증한다. 사용자의 것이 아닌 브랜치에는 사용자가 요청하지 않으면 푸시하지 않는다.
+- `develop`은 아래 순서로 판단한다. 1) Cloudflare Pages로 배포하면 둔다. 2) 사용자가 요청하면 둔다. 3) 그 외에는 두지 않고 `main`만 쓴다. 버전·릴리스 여부는 무관하다.
+- 작업이 끝난 사용자의 브랜치는 로컬·원격 모두 지운다(`main`·`develop` 같은 장기 브랜치 제외). 푸시·병합까지 요청받은 작업은 로컬과 원격이 일치하고 미커밋 변경이 없는 상태로 마친다.
+- 커밋·푸시 전에 `git config core.hooksPath`가 `.githooks`가 아니면 `git config core.hooksPath .githooks`를 실행한다.
+
+#### 커밋과 PR
+
+- 커밋은 의미·작업 단위 하나씩 만든다. 같은 목적의 후속 수정(오타·누락·리뷰 반영)은 푸시 전에 amend·fixup으로 합친다.
+- 커밋 제목은 `<type>(<선택 scope>): <요약>`이다. type은 `feat` `fix` `perf` `refactor` `docs` `test` `build` `ci` `chore` `style` `revert`, 72자 이내, 끝에 마침표 없음. 호환을 깨는 변경은 콜론 앞에 `!`를 붙인다(`feat!:`). 이유가 필요하면 본문에 쓴다. GitHub 병합에는 훅이 실행되지 않으므로 병합 전에 PR 제목을 확인한다.
+- PR 본문은 요약(무엇을·왜), 확인한 방법(실제 실행한 것만), 남은 결정 순서로 짧게 쓴다(`.github/pull_request_template.md`).
+- 커밋 메시지와 PR 본문에 AI 생성 표식이나 co-author 트레일러를 넣지 않는다. PR을 만든 뒤 본문을 한 번 확인한다.
+
+#### 병합과 릴리스
+
+- 병합 방식: `develop`이 없으면 squash만 쓴다. rebase 병합은 쓰지 않는다. squash 커밋의 메시지는 PR 제목과 본문이다. 병합 요청은 릴리스를 뜻하지 않는다.
+- 병합과 릴리스는 별개다. 병합할 때마다 CHANGELOG의 `[Unreleased]`에 쌓아 두고, 버전은 사용자가 올리라고 지시한 시점에만 올린다. 릴리스 한 번에 매니페스트 버전·CHANGELOG·annotated 태그 `vX.Y.Z`·GitHub Release를 함께 만든다(스킬 `release-project`). 버전을 쓰지 않는 프로젝트에는 태그·CHANGELOG·Release를 두지 않는다.
+
+#### `develop`을 쓰는 프로젝트
+
+- `develop`을 두면 이유를 프로젝트 구역에 한 줄 쓰고, 작업 브랜치는 `develop`에서 따서 `develop`으로 PR하며(미리보기), `main`은 릴리스 PR(`develop` → `main`)로만 갱신한다(정식).
+- 병합 방식: 작업 브랜치 → `develop`은 squash, `develop` → `main` 릴리스는 merge commit이다.
+- 릴리스 병합 커밋 때문에 `develop`이 `main`보다 뒤처져 보여도 `main`→`develop` 동기화 PR을 만들지 않는다. `main`에 `develop`을 거치지 않은 커밋이 생긴 경우에만 그 PR로 되병합한다.
+
+#### 선언
+
+- Git 규칙은 프로젝트 규칙이 대체하지 못한다. 프로젝트가 바꿀 수 있는 것은 이 구역이 "선언"이라고 적은 항목뿐이고, 프로젝트 구역에 한 줄씩 쓴다.
+- 선언 `main` 직행: 쓰기 권한자가 한 명인 저장소만 쓸 수 있다. 프로젝트 구역에 `<!-- ysm:direct-main -->` 줄을 쓰고 이유를 옆에 적으면 `main`에 직접 커밋·푸시할 수 있다. `develop`과 force push·삭제는 그대로 막힌다.
+- 선언 커밋 제목 언어: 모든 프로젝트가 프로젝트 구역에 `<!-- ysm:commit-lang=ko -->` 또는 `<!-- ysm:commit-lang=en -->` 줄을 쓴다. 봇이 만든 커밋·PR 제목은 예외다.
+
+### 안전
+
+- 저장소는 언제 공개되어도 문제가 없는 상태로 유지한다. `.env`, 키, 토큰, 개인정보, 개인 절대경로, 개인 취향·운영 데이터, 실제 업무 문서를 저장소에 넣거나 읽어 출력하지 않는다. 환경변수 예시는 값이 없는 `.env.example`만 둔다.
+- GitHub Actions 워크플로는 최상위를 `permissions: contents: read`로 두고 쓰기 권한은 필요한 job에만 준다. `pull_request_target`은 쓰지 않으며, 포크 PR 실행에 시크릿을 노출하지 않는다.
 
 ### 문서
 
-- 루트에는 `README.md`·`AGENTS.md`·`CLAUDE.md`·`LICENSE`·`CHANGELOG.md`처럼 관례상 필요한 파일만 두고, 기획·인수인계·결정 기록·가이드 같은 나머지 문서는 `docs/`에 둔다. 사용자가 폴더에 넣어 둔 입력 문서도 `docs/`로 옮긴다.
+- 루트에는 `README.md`·`AGENTS.md`·`CLAUDE.md`·`LICENSE`·`CHANGELOG.md`처럼 관례상 필요한 파일만 두고, 나머지 문서(사용자가 넣어 둔 입력 문서 포함)는 `docs/`에 둔다.
 - 같은 규칙·사실은 한 문서에만 쓰고 나머지는 링크한다. 문서 종류마다 자리를 하나로 정한다(README는 개요·사용법, 로드맵은 앞으로 할 일만이며 끝난 항목은 지운다). 문서를 늘리기보다 합친다. 날짜를 박은 "현재 수준" 표를 두지 않는다.
 - `CONTRIBUTING.md`를 두면 외부 기여자가 읽을 최소 안내만 쓰고 이 파일의 작업 규칙을 반복하지 않는다.
 - `CHANGELOG.md`는 Added·Changed·Fixed·Removed로 나누고, 같은 주제는 한 줄로 합쳐 간결하게 쓴다.
 - 작업 끝에 다음에도 쓸모 있는 시행착오만 문서나 스킬에 사족 없이 남긴다.
+
+### 코드와 테스트
+
+- 테스트는 중요한 동작과 회귀 위험만 둔다. 극단 상황, 다른 테스트와 중복, 구현 세부 확인은 쓰지 않고, 빨리 끝난다는 이유만으로 남기지 않는다.
+- 테스트를 통과시키려고 기대값을 현재 결과에 맞추지 않는다.
+- 코드를 바꾸면 쓰지 않게 된 코드·스타일·의존성·테스트를 같은 변경에서 지운다.
+
+### 의존성과 환경
+
+- 의존성·가상환경·캐시·데이터·설정·로그는 프로젝트 폴더 안에만 두어, 폴더를 지우면 함께 사라지게 한다. 설치물과 결과물을 프로젝트 밖(스크래치패드, 전역, 에이전트 메모리)에 두지 않는다. 폴더 하나만 받아도 다른 컴퓨터에서 이어갈 수 있어야 한다. 폴더 밖 저장은 사용자가 명시적으로 고른 경우만 허용한다.
+  - Node: `package.json`의 `devDependencies`와 `npx`.
+  - Python: `uv`로 프로젝트 `.venv`만 쓴다(`uv sync`, `uv add`).
+  - 런타임 버전은 `.node-version`, `.python-version`에만 고정한다. Node는 새로 정할 때의 최신 LTS 메이저까지만, Python은 사용하는 의존성이 모두 지원하는 최신 안정 마이너까지만 적는다(패치는 설치 도구가 최신을 받는다). `mise.toml`은 두지 않는다.
+- 패키지 매니페스트나 워크플로가 있는 활성 저장소(보관했거나 1년 넘게 커밋이 없으면 제외)는 `.github/dependabot.yml`을 둔다(출처 저장소의 `baseline/dependabot.yml`을 복사해 쓴다). Dependabot PR은 사용자가 요청할 때만 병합하고(자동 병합 금지) 병합 뒤 `dependabot/` 브랜치를 지운다.
+- macOS와 Windows에서 같은 동작을 하도록 플랫폼 중립 경로와 LF 줄바꿈을 쓴다(`.cmd`만 CRLF).
+
+### 점검
+
+- 방향 전환·큰 변경·커밋 묶음·릴리즈 뒤에는 요청이 없어도 바뀐 범위의 문서(낡은 정보·중복·모순·사족, 스킬 `audit-docs`), 코드와 테스트(구조·중복·미사용, 단언 없거나 항상 통과하는 테스트, 스킬 `tidy-code`), 사용자 문구(언어 추가 전에도, 스킬 `audit-messages`)를 점검하고 무엇을 고쳤는지 보고한다.
 
 ### UI가 있는 프로젝트
 
@@ -65,7 +127,7 @@ sh tools/test-hooks.sh                     # 훅 회귀 테스트(임시 저장�
 
 ### 사용자 문구가 있는 프로젝트
 
-UI·CLI·오류 안내처럼 사용자에게 보이는 문구나 앱이 에이전트에게 보내는 요청문·안내가 있는 프로젝트에 적용한다. 개발자용 로그·진단 문구, 테스트, 에이전트 지침 파일에는 적용하지 않는다.
+사용자에게 보이는 문구(UI·CLI·오류 안내)와 앱이 에이전트에게 보내는 요청문·안내에 적용한다. 개발자용 로그·진단 문구, 테스트, 에이전트 지침 파일은 제외한다.
 
 - 한 개념에는 한 단어만 쓰고 한 단어는 한 뜻으로만 쓴다. 헷갈리거나 어긋난 적이 있는 용어만 `docs/`의 용어집 한 파일에 정한다.
 - 안내에 인용하는 버튼·메뉴·명령 이름은 사용자가 실제로 보는 것과 같아야 한다.
@@ -75,49 +137,8 @@ UI·CLI·오류 안내처럼 사용자에게 보이는 문구나 앱이 에이�
 
 ### 로컬 서버가 있는 프로젝트
 
-- 비개발자가 주소·명령어 없이 쓰도록 루트에 더블클릭 실행 파일을 둔다(Windows `.cmd`, macOS `.command`). 서버는 그 창에서 직접 실행하고(백그라운드·분리 금지), 창이 열려 있는 동안만 켜지고 닫으면 꺼진다. 창 제목에 이 사실을 적는다.
+- 비개발자가 주소·명령어 없이 쓰도록 루트에 더블클릭 실행 파일을 둔다(Windows `.cmd`, macOS `.command`). 서버는 그 창에서 직접 실행해(백그라운드·분리 금지) 창을 닫으면 꺼지게 하고, 창 제목에 이 사실을 적는다.
 - 주소와 포트는 용도에 맞게 고른다. 본인 컴퓨터에서만 쓰면 외부 접속이 안 되는 주소로, 다른 기기에서 접속해야 하면 그 범위에만 연다. 포트는 다른 프로젝트와 겹치지 않는 값을 고르고, 사용 중이면 다음 포트를 쓴다. 브라우저는 자동으로 연다.
 - 같은 프로젝트의 서버는 하나만 켠다. 이미 켜져 있으면 새로 띄우지 않고 기존 주소를 브라우저로 열며, 켜진 서버가 있다는 안내를 보여 준다.
 - 런타임(uv, node)이 없으면 설치 안내를 출력하고 멈춘다. 종료 때는 꺼졌다는 안내를 출력하고 멈춘다.
-
-### Git
-
-- stage·commit·push·PR·merge는 사용자가 요청할 때만 한다. 승인은 그 요청에만 유효하고 다음 작업으로 이어지지 않는다. 이 파일의 프로젝트 구역에 선언한 상시 승인만 예외다.
-- Git 규칙은 프로젝트 규칙이 대체하지 못한다. 프로젝트가 바꿀 수 있는 것은 이 구역이 "선언"이라고 적은 항목뿐이고, 프로젝트 구역에 한 줄씩 쓴다.
-- 보호 브랜치는 `main`과 있으면 `develop`이다. 여기에는 직접 커밋·푸시하지 않고, 작업 브랜치(`feat/` `fix/` `docs/` `chore/` `ci/` + kebab-case)에서 PR로 병합한다. 첫 커밋만 `main`에 직접 한다. 병렬 작업은 브랜치마다 `git worktree`로 분리한다. `.githooks/pre-commit`·`pre-push`가 막는다(프로젝트 전용 푸시 검사는 훅을 고치지 말고 `.githooks/pre-push.local`에 둔다).
-- 작업 브랜치는 PR을 보낼 저장소의 대상 브랜치 최신 상태에서 만들고, PR을 열거나 갱신하기 전에 대상 브랜치의 최신 내용을 반영해 검증한다. 사용자의 것이 아닌 브랜치에는 사용자가 요청하지 않으면 푸시하지 않는다.
-- 선언 `main` 직행: 쓰기 권한자가 한 명인 저장소만 쓸 수 있다. 프로젝트 구역에 `<!-- ysm:direct-main -->` 줄을 쓰고 이유를 옆에 적으면 `main`에 직접 커밋·푸시할 수 있다. `develop`과 force push·삭제는 그대로 막힌다.
-- 선언 커밋 제목 언어: 모든 프로젝트가 프로젝트 구역에 `<!-- ysm:commit-lang=ko -->` 또는 `<!-- ysm:commit-lang=en -->` 줄을 쓰고, `.githooks/commit-msg`가 검사한다. Dependabot·GitHub Actions 같은 봇이 만든 커밋과 PR의 제목은 언어 선언의 예외다.
-- force push, 푸시한 이력의 수정, 브랜치·태그 강제 삭제, 공유 브랜치의 `reset --hard`는 사용자가 그 대화에서 직접 요청했을 때만 한다. 보호 브랜치와 태그에는 `YSM_ALLOW_FORCE=1`을 붙여야 훅을 통과한다. 이미 푸시한 작업 브랜치의 재작성은 `--force-with-lease`로만 한다. 푸시 전 로컬 커밋의 amend·fixup 정리는 이력 재작성이 아니다. `--no-verify`로 훅을 우회하지 않는다.
-- 커밋은 의미·작업 단위 하나씩 만든다. 같은 목적의 후속 수정(오타·누락·리뷰 반영)은 새 커밋으로 쌓지 말고 푸시 전에 amend·fixup으로 합쳐 원격 이력을 깔끔하게 유지한다.
-- `develop`은 아래 순서로 판단한다. 1) Cloudflare Pages로 배포하면 둔다. 2) 사용자가 요청하면 둔다. 3) 그 외에는 두지 않고 `main`만 쓴다. 버전·릴리스 여부는 기준이 아니다. `develop`을 두면 이유를 프로젝트 구역에 한 줄 쓰고, 작업 브랜치는 `develop`에서 따서 `develop`으로 PR하며(미리보기), `main`은 릴리스 PR(`develop` → `main`)로만 갱신한다(정식).
-- 병합 방식: `develop`이 없으면 squash만 쓴다. 있으면 작업 브랜치 → `develop`은 squash, `develop` → `main` 릴리스는 merge commit이다. rebase 병합은 쓰지 않는다. squash 커밋의 메시지는 PR 제목과 본문이다. 병합 요청은 릴리스를 뜻하지 않는다.
-- 릴리스 병합 커밋 때문에 `develop`이 `main`보다 뒤처져 보여도 맞추지 않는다. `main`→`develop` 동기화 PR은 병합 커밋을 다시 만들어 뒤처짐이 반복되므로 만들지 않는다. `main`에 `develop`을 거치지 않은 커밋이 생긴 경우에만 그 PR로 되병합한다.
-- 병합과 릴리스는 별개다. 병합할 때마다 CHANGELOG의 `[Unreleased]`에 쌓아 두고, 버전은 사용자가 올리라고 지시한 시점에만 올린다. 릴리스 한 번에 매니페스트 버전·CHANGELOG·annotated 태그 `vX.Y.Z`·GitHub Release를 함께 만든다(스킬 `release-project`). 버전을 쓰지 않는 프로젝트에는 태그·CHANGELOG·Release를 두지 않는다.
-- 커밋 제목은 `<type>(<선택 scope>): <요약>`이다. type은 `feat` `fix` `perf` `refactor` `docs` `test` `build` `ci` `chore` `style` `revert`, 72자 이내, 끝에 마침표 없음. 호환을 깨는 변경은 콜론 앞에 `!`를 붙인다(`feat!:`). 형식과 언어는 `.githooks/commit-msg`가 검사한다. GitHub에서 병합할 때는 훅이 실행되지 않으므로 병합 전에 PR 제목을 확인한다. 이유가 필요하면 본문에 쓴다.
-- PR 본문은 요약(무엇을·왜), 확인한 방법(실제 실행한 것만), 남은 결정 순서로 짧게 쓴다(`.github/pull_request_template.md`).
-- 커밋 메시지와 PR 본문에 AI 생성 표식이나 co-author 트레일러(`Co-Authored-By: Claude …`, `🤖 Generated with …` 등)를 넣지 않는다. 커밋은 훅이, PR 본문 생성은 `.claude/settings.json`의 `attribution` 설정이 막고, PR을 만든 뒤 본문을 한 번 확인한다.
-- 작업이 끝난 사용자의 브랜치는 로컬·원격 모두 지운다(`main`·`develop` 같은 장기 브랜치 제외). 푸시·병합까지 요청받은 작업은 로컬과 원격이 일치하고 미커밋 변경이 없는 상태로 마친다.
-- 커밋·푸시 전에 `git config core.hooksPath`가 `.githooks`가 아니면 `git config core.hooksPath .githooks`를 실행한다.
-
-### 코드와 테스트
-
-- 테스트는 중요한 동작과 회귀 위험만 둔다. 극단 상황, 다른 테스트와 중복, 구현 세부 확인은 쓰지 않고, 빨리 끝난다는 이유만으로 남기지 않는다.
-- 기존 테스트도 검증한다. 단언이 없거나 항상 통과하는 것, 건너뛴 것, 불안정한 것을 찾고, 핵심 테스트는 대상 동작을 임시로 깨 보아 실패하는지 확인한다. 통과시키려고 기대값을 현재 결과에 맞추지 않는다.
-- 코드를 바꾸면 쓰지 않게 된 코드·스타일·의존성·테스트를 같은 변경에서 지운다.
-
-### 의존성과 환경
-
-- 의존성·가상환경·캐시·데이터·설정·로그는 프로젝트 폴더 안에만 두어, 폴더를 지우면 함께 사라지게 한다. 설치물과 결과물을 프로젝트 밖(스크래치패드, 전역, 에이전트 메모리)에 두지 않는다. 폴더 하나만 받아도 다른 컴퓨터에서 이어갈 수 있어야 한다. 폴더 밖 저장은 사용자가 명시적으로 고른 경우만 허용한다.
-  - Node: `package.json`의 `devDependencies`와 `npx`.
-  - Python: `uv`로 프로젝트 `.venv`만 쓴다(`uv sync`, `uv add`).
-  - 런타임 버전은 `.node-version`, `.python-version`에만 고정한다. Node는 새로 정할 때의 최신 LTS 메이저까지만, Python은 사용하는 의존성이 모두 지원하는 최신 안정 마이너까지만 적는다(패치는 설치 도구가 최신을 받는다). `mise.toml`은 두지 않는다.
-- 패키지 매니페스트나 워크플로가 있는 활성 저장소는 `.github/dependabot.yml`을 둔다(출처 저장소의 `baseline/dependabot.yml` 표준: 매주 월요일, minor·patch 묶음, major 개별). 보관했거나 1년 넘게 커밋이 없는 저장소에는 두지 않는다. Dependabot PR은 자동 병합하지 않고, 병합은 사용자가 요청할 때만 하며 병합 뒤 `dependabot/` 브랜치를 지운다.
-- macOS와 Windows에서 같은 동작을 하도록 플랫폼 중립 경로와 LF 줄바꿈을 쓴다(`.cmd`만 CRLF).
-
-### 안전
-
-- 저장소는 언제 공개되어도 문제가 없는 상태로 유지한다. `.env`, 키, 토큰, 개인정보, 개인 절대경로, 개인 취향·운영 데이터, 실제 업무 문서를 저장소에 넣거나 읽어 출력하지 않는다. 환경변수 예시는 값이 없는 `.env.example`만 둔다.
-- 비밀값으로 보이는 파일·문자열이 staged에 있으면 `.githooks/pre-commit`이 커밋을 막는다.
-- GitHub Actions 워크플로는 최상위를 `permissions: contents: read`로 두고 쓰기 권한은 필요한 job에만 준다. `pull_request_target`은 쓰지 않으며, 포크 PR 실행에 시크릿을 노출하지 않는다.
 <!-- ysm-baseline:end -->
