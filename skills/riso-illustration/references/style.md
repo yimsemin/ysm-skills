@@ -24,7 +24,7 @@
 
 ## 프롬프트 골격
 
-기본 화풍에서는 `[ ]`를 채운다. 지정된 스타일 가이드가 있으면 화풍·팔레트 문장을 해당 기준으로 바꾼다. 같은 작업의 후보에는 공통 기준을 적용한다.
+기본 화풍에서는 `[ ]`를 채운다. 프로젝트 가이드나 캐릭터 시트의 스타일을 적용할 때는 화풍·팔레트 문장을 해당 기준으로 바꾼다. 같은 작업의 후보에는 공통 기준을 적용한다.
 
 ```text
 Hand-drawn two-color Risograph editorial illustration with slightly irregular outlines, grainy ink on paper, subtle ink misregistration, uneven ink coverage, and simplified friendly characters.

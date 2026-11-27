@@ -55,7 +55,7 @@ ysm-skills 저장소를 참고해서 이 컴퓨터의 작업 지침을 점검해
 | README 작성·개선, 문서의 오류·중복 점검 | [write-readme](skills/write-readme/SKILL.md), [audit-docs](skills/audit-docs/SKILL.md) |
 | 코드·테스트 정리, 화면·오류 문구 점검 | [tidy-code](skills/tidy-code/SKILL.md), [audit-messages](skills/audit-messages/SKILL.md) |
 | 프로젝트 릴리스, 해결 방법을 다른 프로젝트와 공유 | [release-project](skills/release-project/SKILL.md), [share-lesson](skills/share-lesson/SKILL.md) |
-| 두 가지 색의 리소그래프풍 일러스트 제작 | [riso-illustration](skills/riso-illustration/SKILL.md) |
+| 화풍과 캐릭터가 일관된 리소그래프풍 일러스트 제작 | [riso-illustration](skills/riso-illustration/SKILL.md) |
 
 표에서 하고 싶은 일을 골라 “ysm-skills 저장소를 참고해서 ~해줘”라고 요청해 보세요.
 
